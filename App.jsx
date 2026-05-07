@@ -1,0 +1,459 @@
+import { useState, useMemo, useEffect, useCallback } from "react";
+
+const SUPABASE_URL = "https://mhbumikrwpwrayedozec.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oYnVtaWtyd3B3cmF5ZWRvemVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzUwMzEsImV4cCI6MjA5MzcxMTAzMX0.zXshcM476oUJ3-UhKpiRbaQDDvhoAr1rLG3EpBAlrAo";
+
+const api = async (path, method = "GET", body = null, token = null) => {
+  const headers = {
+    "Content-Type": "application/json",
+    "apikey": SUPABASE_ANON_KEY,
+    "Prefer": method === "POST" ? "return=representation" : "",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(`${SUPABASE_URL}${path}`, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : null,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || err.error_description || "Request failed");
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+};
+
+const authApi = async (path, body) => {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error_description || data.msg || "Auth failed");
+  return data;
+};
+
+const fmt = (v) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
+const fmtDate = (d) => new Date(d + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
+// ─── AUTH SCREEN ───────────────────────────────────────────────────────────────
+function AuthScreen({ onLogin }) {
+  const [mode, setMode] = useState("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handle = async () => {
+    setError(""); setSuccess("");
+    if (!email || !password) { setError("Enter email and password."); return; }
+    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
+    setLoading(true);
+    try {
+      if (mode === "login") {
+        const data = await authApi("/token?grant_type=password", { email, password });
+        onLogin(data.access_token, data.user);
+      } else {
+        await authApi("/signup", { email, password });
+        setSuccess("Account created! You can now log in.");
+        setMode("login");
+      }
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #e8eeff 0%, #f5f8ff 50%, #dce8ff 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        input { background: #f4f7ff; border: 1.5px solid #dce6ff; border-radius: 10px; color: #0f1a3a; font-family: inherit; font-size: 15px; padding: 13px 16px; width: 100%; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        input:focus { border-color: #3b5df5; box-shadow: 0 0 0 3px rgba(59,93,245,0.12); }
+        input::placeholder { color: #aab8e0; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+      `}</style>
+      <div style={{ background: "#fff", borderRadius: 24, border: "1px solid #dce6ff", boxShadow: "0 8px 48px rgba(30,80,220,0.12)", padding: "48px 44px", width: "100%", maxWidth: 420, animation: "fadeUp 0.4s ease both" }}>
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{ width: 52, height: 52, background: "linear-gradient(135deg,#2145e6,#0f2aab)", borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, color: "#fff", margin: "0 auto 16px" }}>◈</div>
+          <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 28, color: "#0f1a3a", letterSpacing: "-0.5px" }}>TradeLog</div>
+          <div style={{ fontSize: 13, color: "#aab8e0", marginTop: 6 }}>{mode === "login" ? "Sign in to your account" : "Create a new account"}</div>
+        </div>
+
+        {error && <div style={{ background: "#fff0f3", border: "1px solid #ffc5cf", borderRadius: 10, padding: "11px 14px", fontSize: 13, color: "#e02044", marginBottom: 16, fontWeight: 600 }}>{error}</div>}
+        {success && <div style={{ background: "#e8fff3", border: "1px solid #a3f0c8", borderRadius: 10, padding: "11px 14px", fontSize: 13, color: "#0ea55a", marginBottom: 16, fontWeight: 600 }}>{success}</div>}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div>
+            <label style={{ fontSize: 11, color: "#8fa4d4", letterSpacing: 0.8, textTransform: "uppercase", fontWeight: 600, display: "block", marginBottom: 6 }}>Email</label>
+            <input type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && handle()} />
+          </div>
+          <div>
+            <label style={{ fontSize: 11, color: "#8fa4d4", letterSpacing: 0.8, textTransform: "uppercase", fontWeight: 600, display: "block", marginBottom: 6 }}>Password</label>
+            <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && handle()} />
+          </div>
+          <button onClick={handle} disabled={loading}
+            style={{ background: loading ? "#a0b4f5" : "linear-gradient(135deg,#2145e6,#0f2aab)", color: "#fff", border: "none", borderRadius: 12, padding: "15px", fontFamily: "inherit", fontWeight: 700, fontSize: 15, cursor: loading ? "not-allowed" : "pointer", marginTop: 4, transition: "all 0.15s", letterSpacing: 0.3 }}>
+            {loading ? "Please wait…" : mode === "login" ? "Sign In" : "Create Account"}
+          </button>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "#aab8e0" }}>
+          {mode === "login" ? "Don't have an account? " : "Already have an account? "}
+          <span onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); setSuccess(""); }}
+            style={{ color: "#2145e6", fontWeight: 700, cursor: "pointer" }}>
+            {mode === "login" ? "Sign Up" : "Sign In"}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN DASHBOARD ────────────────────────────────────────────────────────────
+export default function App() {
+  const [token, setToken] = useState(() => localStorage.getItem("tl_token") || null);
+  const [user, setUser] = useState(null);
+  const [trades, setTrades] = useState([]);
+  const [startCap, setStartCap] = useState(10000);
+  const [capEdit, setCapEdit] = useState(false);
+  const [capInput, setCapInput] = useState("");
+  const [loadingData, setLoadingData] = useState(false);
+
+  const [date, setDate] = useState(todayStr());
+  const [ticker, setTicker] = useState("");
+  const [result, setResult] = useState("");
+  const [note, setNote] = useState("");
+  const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const [expandedDay, setExpandedDay] = useState(null);
+  const [activeTab, setActiveTab] = useState("log");
+
+  const onLogin = (tok, u) => {
+    localStorage.setItem("tl_token", tok);
+    setToken(tok);
+    setUser(u);
+  };
+
+  const onLogout = () => {
+    localStorage.removeItem("tl_token");
+    setToken(null);
+    setUser(null);
+    setTrades([]);
+  };
+
+  const fetchData = useCallback(async () => {
+    if (!token) return;
+    setLoadingData(true);
+    try {
+      const [tradeData, settingsData] = await Promise.all([
+        api("/rest/v1/trades?select=*&order=date.desc,created_at.desc", "GET", null, token),
+        api("/rest/v1/user_settings?select=*", "GET", null, token),
+      ]);
+      setTrades(tradeData || []);
+      if (settingsData && settingsData.length > 0) setStartCap(settingsData[0].starting_capital);
+    } catch (e) {
+      if (e.message.includes("JWT") || e.message.includes("token")) onLogout();
+    } finally {
+      setLoadingData(false);
+    }
+  }, [token]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const addTrade = async () => {
+    const r = parseFloat(result);
+    if (isNaN(r)) { setFormError("Enter a valid result."); return; }
+    if (!date) { setFormError("Pick a date."); return; }
+    setFormError(""); setSaving(true);
+    try {
+      const row = await api("/rest/v1/trades", "POST", { date, ticker: ticker.trim().toUpperCase(), result: r, note: note.trim() }, token);
+      setTrades(prev => [row[0], ...prev]);
+      setTicker(""); setResult(""); setNote("");
+    } catch (e) { setFormError(e.message); }
+    finally { setSaving(false); }
+  };
+
+  const deleteTrade = async (id) => {
+    try {
+      await api(`/rest/v1/trades?id=eq.${id}`, "DELETE", null, token);
+      setTrades(prev => prev.filter(t => t.id !== id));
+    } catch (e) { alert("Delete failed: " + e.message); }
+  };
+
+  const saveCapital = async () => {
+    const v = parseFloat(capInput);
+    if (isNaN(v) || v <= 0) return;
+    try {
+      await api("/rest/v1/user_settings", "POST", { starting_capital: v }, token);
+      setStartCap(v); setCapEdit(false);
+    } catch (e) {
+      // upsert fallback
+      try {
+        const uid = JSON.parse(atob(token.split(".")[1])).sub;
+        await api(`/rest/v1/user_settings?user_id=eq.${uid}`, "PATCH", { starting_capital: v }, token);
+        setStartCap(v); setCapEdit(false);
+      } catch { alert("Could not save capital."); }
+    }
+  };
+
+  const downloadCSV = () => {
+    const rows = [["Date", "Ticker", "Result", "Note"]];
+    [...trades].sort((a, b) => a.date.localeCompare(b.date)).forEach(t => {
+      rows.push([t.date, t.ticker || "", t.result, t.note || ""]);
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "tradelog.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const days = useMemo(() => {
+    const map = {};
+    trades.forEach(t => {
+      if (!map[t.date]) map[t.date] = { date: t.date, trades: [], total: 0 };
+      map[t.date].trades.push(t);
+      map[t.date].total += parseFloat(t.result);
+    });
+    return Object.values(map).sort((a, b) => b.date.localeCompare(a.date));
+  }, [trades]);
+
+  const totalPNL = days.reduce((s, d) => s + d.total, 0);
+  const currentCap = startCap + totalPNL;
+  const capPct = ((currentCap - startCap) / startCap * 100);
+  const winDays = days.filter(d => d.total > 0).length;
+  const lossDays = days.filter(d => d.total < 0).length;
+  const winRate = days.length ? (winDays / days.length * 100).toFixed(1) : "0.0";
+  const best = days.length ? Math.max(...days.map(d => d.total)) : 0;
+  const worst = days.length ? Math.min(...days.map(d => d.total)) : 0;
+
+  const chartDays = [...days].reverse().slice(-12);
+  const maxAbs = Math.max(...chartDays.map(d => Math.abs(d.total)), 1);
+
+  if (!token) return <AuthScreen onLogin={onLogin} />;
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#f0f4ff", fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#0f1a3a" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #c5d3f5; border-radius: 4px; }
+        .card { background: #fff; border-radius: 18px; border: 1px solid #dce6ff; box-shadow: 0 2px 12px rgba(30,80,220,0.06); }
+        .card-blue { background: linear-gradient(135deg,#1a3fd4 0%,#0f2aab 100%); border-radius: 18px; color: #fff; }
+        input[type=text],input[type=number],input[type=date] { background:#f4f7ff; border:1.5px solid #dce6ff; border-radius:10px; color:#0f1a3a; font-family:inherit; font-size:14px; padding:11px 14px; width:100%; outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
+        input:focus { border-color:#3b5df5; box-shadow:0 0 0 3px rgba(59,93,245,0.12); }
+        input::placeholder { color:#aab8e0; }
+        .btn-primary { background:#2145e6; color:#fff; border:none; border-radius:11px; padding:12px 24px; font-family:inherit; font-weight:700; font-size:14px; cursor:pointer; transition:all 0.15s; }
+        .btn-primary:hover { background:#1a35c4; transform:translateY(-1px); box-shadow:0 4px 16px rgba(33,69,230,0.28); }
+        .btn-primary:disabled { background:#a0b4f5; cursor:not-allowed; transform:none; }
+        .btn-outline { background:#fff; color:#2145e6; border:1.5px solid #2145e6; border-radius:11px; padding:11px 20px; font-family:inherit; font-weight:700; font-size:13px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:6px; }
+        .btn-outline:hover { background:#f0f4ff; }
+        .btn-ghost { background:none; border:1.5px solid #dce6ff; color:#6b85c5; border-radius:9px; padding:5px 12px; cursor:pointer; font-family:inherit; font-size:12px; font-weight:600; transition:all 0.15s; }
+        .btn-ghost:hover { border-color:#e02044; color:#e02044; }
+        .day-row { background:#fff; border:1.5px solid #dce6ff; border-radius:14px; overflow:hidden; transition:border-color 0.2s,box-shadow 0.2s; }
+        .day-row:hover { border-color:#a0b4f5; box-shadow:0 2px 14px rgba(30,80,220,0.08); }
+        .chip { border-radius:7px; padding:3px 10px; font-size:13px; font-weight:700; }
+        .chip-pos { background:#e8fff3; color:#0ea55a; }
+        .chip-neg { background:#fff0f3; color:#e02044; }
+        .chip-zero { background:#f0f4ff; color:#6b85c5; }
+        .tab { padding:8px 18px; border-radius:9px; cursor:pointer; font-weight:600; font-size:13px; transition:all 0.15s; border:none; font-family:inherit; }
+        .tab-active { background:#2145e6; color:#fff; }
+        .tab-inactive { background:none; color:#6b85c5; }
+        .tab-inactive:hover { background:#eef1ff; }
+        label { font-size:11px; color:#8fa4d4; letter-spacing:0.8px; text-transform:uppercase; font-weight:600; display:block; margin-bottom:6px; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .fade-up { animation:fadeUp 0.3s ease both; }
+        .spinner { width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; display:inline-block; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+      `}</style>
+
+      {/* Header */}
+      <div style={{ background: "#fff", borderBottom: "1px solid #dce6ff", padding: "0 40px" }}>
+        <div style={{ maxWidth: 1020, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 34, height: 34, background: "linear-gradient(135deg,#2145e6,#0f2aab)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#fff" }}>◈</div>
+            <span style={{ fontFamily: "'Instrument Serif', serif", fontSize: 21, letterSpacing: "-0.3px" }}>TradeLog</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ fontSize: 12, color: "#aab8e0", fontWeight: 500 }}>{user?.email || ""}</div>
+            <button onClick={downloadCSV} className="btn-outline" style={{ fontSize: 12, padding: "8px 16px" }}>
+              ⬇ Download CSV
+            </button>
+            <button onClick={onLogout} style={{ background: "none", border: "1.5px solid #dce6ff", color: "#6b85c5", borderRadius: 9, padding: "7px 16px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 600, transition: "all 0.15s" }}>
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1020, margin: "0 auto", padding: "32px 40px", display: "flex", flexDirection: "column", gap: 20 }}>
+
+        {loadingData && (
+          <div style={{ textAlign: "center", padding: "40px", color: "#aab8e0", fontSize: 14 }}>
+            <div className="spinner" style={{ borderTopColor: "#2145e6", borderColor: "#dce6ff", margin: "0 auto 12px" }} />
+            Loading your trades…
+          </div>
+        )}
+
+        {!loadingData && <>
+          {/* Stats Row */}
+          <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr", gap: 14 }} className="fade-up">
+            <div className="card-blue" style={{ padding: "24px 26px" }}>
+              <div style={{ fontSize: 11, letterSpacing: 1, opacity: 0.55, fontWeight: 600, textTransform: "uppercase", marginBottom: 8 }}>Current Capital</div>
+              <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 36, letterSpacing: "-1px", lineHeight: 1 }}>{fmt(currentCap)}</div>
+              <div style={{ marginTop: 12 }}>
+                <span style={{ fontSize: 12, background: capPct >= 0 ? "rgba(255,255,255,0.18)" : "rgba(255,60,80,0.3)", borderRadius: 7, padding: "4px 10px", fontWeight: 700 }}>
+                  {capPct >= 0 ? "▲" : "▼"} {Math.abs(capPct).toFixed(2)}%
+                </span>
+              </div>
+              <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.12)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: 10, opacity: 0.5, textTransform: "uppercase", letterSpacing: 0.8 }}>Starting Capital</div>
+                  <div style={{ fontWeight: 700, fontSize: 16, marginTop: 2 }}>{fmt(startCap)}</div>
+                </div>
+                <button onClick={() => { setCapEdit(!capEdit); setCapInput(startCap.toString()); }}
+                  style={{ background: "rgba(255,255,255,0.15)", border: "none", color: "#fff", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 11, fontFamily: "inherit", fontWeight: 700 }}>
+                  {capEdit ? "CANCEL" : "EDIT"}
+                </button>
+              </div>
+              {capEdit && (
+                <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+                  <input type="number" value={capInput} onChange={e => setCapInput(e.target.value)} placeholder="Starting capital"
+                    style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", flex: 1 }} />
+                  <button onClick={saveCapital} style={{ background: "#fff", color: "#1a3fd4", border: "none", borderRadius: 8, padding: "9px 14px", cursor: "pointer", fontFamily: "inherit", fontWeight: 700, fontSize: 12, whiteSpace: "nowrap" }}>SAVE</button>
+                </div>
+              )}
+            </div>
+
+            <div className="card" style={{ padding: "22px" }}>
+              <label>Total PNL</label>
+              <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 30, color: totalPNL >= 0 ? "#0ea55a" : "#e02044", letterSpacing: "-0.5px" }}>
+                {totalPNL >= 0 ? "+" : ""}{fmt(totalPNL)}
+              </div>
+              <div style={{ marginTop: 10, fontSize: 12, color: "#aab8e0" }}>{trades.length} trade{trades.length !== 1 ? "s" : ""} · {days.length} day{days.length !== 1 ? "s" : ""}</div>
+            </div>
+
+            <div className="card" style={{ padding: "22px" }}>
+              <label>Day Win Rate</label>
+              <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 30 }}>{winRate}%</div>
+              <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
+                <span style={{ fontSize: 13, color: "#0ea55a", fontWeight: 700 }}>▲ {winDays}W</span>
+                <span style={{ fontSize: 13, color: "#e02044", fontWeight: 700 }}>▼ {lossDays}L</span>
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: "22px" }}>
+              <label>Best / Worst Day</label>
+              <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 22, color: "#0ea55a" }}>+{fmt(best)}</div>
+              <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 18, color: "#e02044", marginTop: 6 }}>{fmt(worst)}</div>
+            </div>
+          </div>
+
+          {/* Trade Input */}
+          <div className="card fade-up" style={{ padding: "22px 26px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 17 }}>Log a Trade</div>
+              {formError && <span style={{ fontSize: 12, color: "#e02044", fontWeight: 600 }}>{formError}</span>}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "148px 110px 140px 1fr auto", gap: 12, alignItems: "flex-end" }}>
+              <div><label>Date</label><input type="date" value={date} onChange={e => setDate(e.target.value)} /></div>
+              <div><label>Ticker</label><input type="text" placeholder="AAPL" value={ticker} onChange={e => setTicker(e.target.value)} onKeyDown={e => e.key === "Enter" && addTrade()} /></div>
+              <div><label>Result ($)</label><input type="number" placeholder="120 or -45" value={result} onChange={e => setResult(e.target.value)} onKeyDown={e => e.key === "Enter" && addTrade()} /></div>
+              <div><label>Note (optional)</label><input type="text" placeholder="Setup, reason…" value={note} onChange={e => setNote(e.target.value)} onKeyDown={e => e.key === "Enter" && addTrade()} /></div>
+              <button className="btn-primary" onClick={addTrade} disabled={saving}>
+                {saving ? <span className="spinner" /> : "+ Add"}
+              </button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div style={{ display: "flex", gap: 6 }}>
+            {[["log", "📋  Daily Log"], ["chart", "📊  Chart"]].map(([t, label]) => (
+              <button key={t} className={`tab ${activeTab === t ? "tab-active" : "tab-inactive"}`} onClick={() => setActiveTab(t)}>{label}</button>
+            ))}
+          </div>
+
+          {/* Chart */}
+          {activeTab === "chart" && (
+            <div className="card fade-up" style={{ padding: "24px 26px" }}>
+              <label style={{ marginBottom: 16 }}>Daily PNL — Last {chartDays.length} Days</label>
+              {chartDays.length === 0 ? (
+                <div style={{ textAlign: "center", color: "#aab8e0", padding: "30px 0" }}>No data yet.</div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height: 130 }}>
+                  {chartDays.map(d => {
+                    const pos = d.total >= 0;
+                    const h = Math.max(6, (Math.abs(d.total) / maxAbs) * 110);
+                    return (
+                      <div key={d.date} title={`${fmtDate(d.date)}: ${fmt(d.total)}`}
+                        style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", gap: 4 }}>
+                        <div style={{ fontSize: 9, color: pos ? "#0ea55a" : "#e02044", fontWeight: 700 }}>
+                          {pos ? "+" : ""}{(d.total / 1000).toFixed(1)}k
+                        </div>
+                        <div style={{ width: "100%", height: h, borderRadius: pos ? "6px 6px 2px 2px" : "2px 2px 6px 6px", background: pos ? "linear-gradient(180deg,#4fd98e,#0ea55a)" : "linear-gradient(0deg,#ff6b85,#e02044)" }} />
+                        <div style={{ fontSize: 9, color: "#aab8e0", textAlign: "center" }}>
+                          {new Date(d.date + "T00:00:00").toLocaleDateString("en-US", { month: "numeric", day: "numeric" })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Daily Log */}
+          {activeTab === "log" && (
+            <div className="fade-up" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {days.length === 0 ? (
+                <div className="card" style={{ padding: "52px", textAlign: "center", color: "#aab8e0" }}>No trades yet. Log your first trade above.</div>
+              ) : days.map(day => (
+                <div key={day.date} className="day-row">
+                  <div onClick={() => setExpandedDay(expandedDay === day.date ? null : day.date)}
+                    style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 16, alignItems: "center", padding: "16px 22px", cursor: "pointer" }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 15 }}>{fmtDate(day.date)}</div>
+                      <div style={{ fontSize: 12, color: "#aab8e0", marginTop: 2 }}>{day.trades.length} trade{day.trades.length !== 1 ? "s" : ""}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 10, color: "#aab8e0", letterSpacing: 0.7, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Day PNL</div>
+                      <span className={`chip ${day.total > 0 ? "chip-pos" : day.total < 0 ? "chip-neg" : "chip-zero"}`} style={{ fontSize: 15, padding: "5px 16px" }}>
+                        {day.total > 0 ? "+" : ""}{fmt(day.total)}
+                      </span>
+                    </div>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#f0f4ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#6b85c5", transition: "transform 0.2s", transform: expandedDay === day.date ? "rotate(180deg)" : "none" }}>▾</div>
+                  </div>
+
+                  {expandedDay === day.date && (
+                    <div style={{ background: "#f7f9ff", padding: "4px 22px 16px", display: "flex", flexDirection: "column", gap: 7 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "90px 130px 1fr auto", gap: 12, padding: "4px 14px", fontSize: 10, color: "#aab8e0", letterSpacing: 0.8, fontWeight: 600, textTransform: "uppercase" }}>
+                        <div>Ticker</div><div>Result</div><div>Note</div><div></div>
+                      </div>
+                      {day.trades.map(t => (
+                        <div key={t.id} style={{ display: "grid", gridTemplateColumns: "90px 130px 1fr auto", gap: 12, alignItems: "center", background: "#fff", border: "1px solid #e8eeff", borderRadius: 10, padding: "11px 14px", fontSize: 13 }}>
+                          <div style={{ fontWeight: 700, color: "#2145e6" }}>{t.ticker || "—"}</div>
+                          <span className={`chip ${t.result > 0 ? "chip-pos" : t.result < 0 ? "chip-neg" : "chip-zero"}`}>
+                            {t.result > 0 ? "+" : ""}{fmt(t.result)}
+                          </span>
+                          <div style={{ color: "#8fa4d4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.note || "—"}</div>
+                          <button className="btn-ghost" onClick={() => deleteTrade(t.id)}>✕ Delete</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>}
+      </div>
+    </div>
+  );
+}
