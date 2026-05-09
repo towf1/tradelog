@@ -98,6 +98,7 @@ select{background:#f4f7ff;border:1.5px solid #dce6ff;border-radius:10px;color:#0
 .suggest-box{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #dce6ff;border-radius:10px;box-shadow:0 8px 24px rgba(30,80,220,0.12);z-index:200;max-height:180px;overflow-y:auto;margin-top:4px;}
 .suggest-item{padding:10px 14px;cursor:pointer;font-size:14px;transition:background 0.1s;}
 .suggest-item:hover{background:#f0f4ff;color:#2145e6;font-weight:600;}
+
 /* Calc */
 .calc-card{background:#1e2329;border:1px solid #2b3139;border-radius:16px;padding:22px;}
 .calc-input{width:100%;padding:10px 12px;background:#2b3139;border:1px solid #2b3139;border-radius:8px;color:#eaecef;font-size:0.95rem;outline:none;transition:border-color 0.2s;font-family:inherit;}
@@ -112,8 +113,44 @@ select{background:#f4f7ff;border:1.5px solid #dce6ff;border-radius:10px;color:#0
 .liq-banner{background:rgba(246,70,93,0.1);border:1px solid rgba(246,70,93,0.3);border-radius:10px;padding:12px 16px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;}
 .plat-price{background:rgba(240,185,11,0.1);border:1px solid rgba(240,185,11,0.3);border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;}
 input[type=range]{width:100%;accent-color:#f0b90b;}
+
 /* Profile */
 .profile-stat{background:#f7f9ff;border:1px solid #e8eeff;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;}
+
+/* Toasts */
+.toast-container {position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;}
+.toast {padding: 14px 20px; border-radius: 12px; color: #fff; font-size: 14px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.15); animation: fadeUp 0.3s ease forwards;}
+.toast-success {background: #0ea55a; border: 1px solid #0c8a4b;}
+.toast-error {background: #e02044; border: 1px solid #bd1a38;}
+
+/* Responsive Layout Classes */
+.top-header-container { max-width: 1020px; margin: 0 auto; display: flex; items-center: center; justify-content: space-between; height: 60px; gap: 12px; }
+.top-nav-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.trade-form-grid { display: grid; grid-template-columns: 140px 1fr 1fr 140px 1fr auto; gap: 12px; align-items: flex-end; }
+.day-row-grid { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center; padding: 16px 22px; cursor: pointer; }
+.trade-item-grid { display: grid; grid-template-columns: 1fr 80px 120px 80px; gap: 12px; align-items: center; background: #fff; border: 1px solid #e8eeff; border-radius: 10px; padding: 11px 14px; font-size: 13px; }
+.calc-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* Media Queries for Mobile Screens */
+@media (max-width: 768px) {
+  .top-header-container { height: auto; padding: 12px 0; flex-direction: column; align-items: flex-start; gap: 16px; }
+  .top-nav-tabs { width: 100%; justify-content: space-between; overflow-x: auto; padding-bottom: 4px; }
+  .trade-form-grid { grid-template-columns: 1fr 1fr; }
+  .trade-form-grid > div:last-child { grid-column: span 2; }
+  .trade-form-grid .btn-primary { width: 100%; }
+  .trade-item-grid { grid-template-columns: 1fr 80px auto; gap: 8px; padding: 10px; }
+  .trade-item-grid > div:nth-child(4) { grid-column: span 3; text-align: right; } /* Adjust delete button row */
+  .calc-wrapper { grid-template-columns: 1fr; }
+  .profile-header-card { flex-direction: column; align-items: flex-start; text-align: center; }
+  .profile-header-card > div:first-child { margin: 0 auto; }
+  .profile-header-card button { width: 100%; margin-top: 12px; }
+}
+@media (max-width: 480px) {
+  .trade-form-grid { grid-template-columns: 1fr; }
+  .trade-form-grid > div:last-child { grid-column: span 1; }
+  .day-row-grid { grid-template-columns: 1fr auto; }
+  .day-row-grid > div:last-child { display: none; } /* Hide dropdown arrow to save space */
+}
 `;
 
 // ── COIN AUTOCOMPLETE ─────────────────────────────────────────
@@ -137,7 +174,6 @@ function CoinInput({value,onChange,usedCoins}){
       <input type="text" placeholder="BTC, ETH…" value={value}
         onChange={e=>{onChange(e.target.value.toUpperCase());setShow(true);}}
         onFocus={()=>setShow(true)}
-        style={{background:"#f4f7ff",border:"1.5px solid #dce6ff",borderRadius:10,color:"#0f1a3a",fontFamily:"inherit",fontSize:14,padding:"11px 14px",width:"100%",outline:"none"}}
       />
       {show&&suggestions.length>0&&(
         <div className="suggest-box">
@@ -233,7 +269,6 @@ function ProfilePage({profile,trades,token,onLogout}){
   const worstDay=days.length?Math.min(...days.map(d=>d.total)):0;
   const avgDaily=days.length?totalPNL/days.length:0;
 
-  // Coin stats
   const coinMap={};
   trades.forEach(t=>{const c=t.ticker||"OTHER";if(!coinMap[c])coinMap[c]={count:0,pnl:0};coinMap[c].count++;coinMap[c].pnl+=parseFloat(t.result);});
   const coinList=Object.entries(coinMap).sort((a,b)=>b[1].count-a[1].count).slice(0,6);
@@ -253,8 +288,7 @@ function ProfilePage({profile,trades,token,onLogout}){
 
   return(
     <div style={{maxWidth:900,margin:"0 auto",padding:"28px 24px",display:"flex",flexDirection:"column",gap:24}} className="fade-up">
-      {/* Profile Card */}
-      <div className="card" style={{padding:"32px 36px",display:"flex",gap:28,alignItems:"center",flexWrap:"wrap"}}>
+      <div className="card profile-header-card" style={{padding:"32px 36px",display:"flex",gap:28,alignItems:"center",flexWrap:"wrap"}}>
         <div style={{width:80,height:80,borderRadius:"50%",background:"linear-gradient(135deg,#2145e6,#0f2aab)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:800,fontSize:28,flexShrink:0}}>{initials}</div>
         <div style={{flex:1,minWidth:200}}>
           <div style={{fontFamily:"'Instrument Serif',serif",fontSize:28,color:"#0f1a3a"}}>{profile?.full_name||"Trader"}</div>
@@ -267,7 +301,6 @@ function ProfilePage({profile,trades,token,onLogout}){
         <button onClick={onLogout} style={{background:"#fff0f3",border:"1px solid #ffc5cf",color:"#e02044",borderRadius:10,padding:"9px 20px",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:700}}>Sign Out</button>
       </div>
 
-      {/* Stats Grid */}
       <div>
         <div style={{fontFamily:"'Instrument Serif',serif",fontSize:20,marginBottom:14,color:"#0f1a3a"}}>Trading Statistics</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12}}>
@@ -282,7 +315,6 @@ function ProfilePage({profile,trades,token,onLogout}){
         </div>
       </div>
 
-      {/* Coin Breakdown */}
       {coinList.length>0&&(
         <div>
           <div style={{fontFamily:"'Instrument Serif',serif",fontSize:20,marginBottom:14,color:"#0f1a3a"}}>Coin Performance</div>
@@ -341,7 +373,7 @@ function CalcPage(){
       <div style={{maxWidth:1000,margin:"0 auto"}}>
         <h2 style={{textAlign:"center",color:"#f0b90b",fontFamily:"'Instrument Serif',serif",fontSize:26,marginBottom:6}}>⚡ Binance Futures PnL Calculator</h2>
         <p style={{textAlign:"center",color:"#848e9c",marginBottom:24,fontSize:13}}>Input PnL % on Margin → Get Platform Price, Gross & Net PnL, BDT</p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+        <div className="calc-wrapper">
           <div className="calc-card">
             <div style={{fontWeight:700,color:"#eaecef",marginBottom:16,fontSize:15}}>📊 Trade Setup</div>
             <div style={{display:"flex",gap:10,marginBottom:16}}>
@@ -385,10 +417,10 @@ function CalcPage(){
                 <span style={{color:"#f0b90b",fontWeight:700,fontSize:13}}>{tpPct?`${(tpPct/leverage).toFixed(3)}% move`:"—"}</span>
               </div>
               <div className="plat-price">
-                <div style={{fontSize:11,color:"#f0b90b",textTransform:"uppercase",letterSpacing:0.5}}>Platform Price (Set on Binance)</div>
+                <div style={{fontSize:11,color:"#f0b90b",textTransform:"uppercase",letterSpacing:0.5}}>Platform Price</div>
                 <div style={{fontSize:20,fontWeight:700,color:"#f0b90b",fontFamily:"monospace"}}>{calc&&calc.tpPrice?fP(calc.tpPrice):"—"}</div>
               </div>
-              {[["Gross PnL",calc&&calc.tpGross!=null?`+${fN(calc.tpGross)} USDT`:"—","#0ecb81"],["Net PnL (after fees)",calc&&calc.tpNet!=null?`+${fN(calc.tpNet)} USDT`:"—","#0ecb81"],["Return on Margin",calc&&calc.tpRetPct!=null?`+${fN(calc.tpRetPct)}%`:"—","#0ecb81"]].map(([l,v,c])=>(
+              {[["Gross PnL",calc&&calc.tpGross!=null?`+${fN(calc.tpGross)} USDT`:"—","#0ecb81"],["Net PnL",calc&&calc.tpNet!=null?`+${fN(calc.tpNet)} USDT`:"—","#0ecb81"]].map(([l,v,c])=>(
                 <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:13}}>
                   <span style={{color:"#848e9c"}}>{l}</span><span style={{fontWeight:700,color:c,fontFamily:"monospace"}}>{v}</span>
                 </div>
@@ -401,22 +433,18 @@ function CalcPage(){
                 <span style={{color:"#f0b90b",fontWeight:700,fontSize:13}}>{slPct?`${(slPct/leverage).toFixed(3)}% move`:"—"}</span>
               </div>
               <div className="plat-price">
-                <div style={{fontSize:11,color:"#f0b90b",textTransform:"uppercase",letterSpacing:0.5}}>Platform Price (Set on Binance)</div>
+                <div style={{fontSize:11,color:"#f0b90b",textTransform:"uppercase",letterSpacing:0.5}}>Platform Price</div>
                 <div style={{fontSize:20,fontWeight:700,color:"#f0b90b",fontFamily:"monospace"}}>{calc&&calc.slPrice?fP(calc.slPrice):"—"}</div>
               </div>
-              {[["Gross PnL",calc&&calc.slGross!=null?`${fN(calc.slGross)} USDT`:"—","#f6465d"],["Net PnL (after fees)",calc&&calc.slNet!=null?`${fN(calc.slNet)} USDT`:"—","#f6465d"],["Return on Margin",calc&&calc.slRetPct!=null?`${fN(calc.slRetPct)}%`:"—","#f6465d"]].map(([l,v,c])=>(
+              {[["Gross PnL",calc&&calc.slGross!=null?`${fN(calc.slGross)} USDT`:"—","#f6465d"],["Net PnL",calc&&calc.slNet!=null?`${fN(calc.slNet)} USDT`:"—","#f6465d"]].map(([l,v,c])=>(
                 <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:13}}>
                   <span style={{color:"#848e9c"}}>{l}</span><span style={{fontWeight:700,color:c,fontFamily:"monospace"}}>{v}</span>
                 </div>
               ))}
               {calc?.slNet&&<div style={{fontSize:11,color:"#848e9c",textAlign:"right",marginTop:4}}>{fN(calc.slNet*bdtRate)} BDT</div>}
             </div>
-            <div style={{fontSize:11,color:"#848e9c",textAlign:"center",marginTop:10,fontStyle:"italic"}}>*Fees estimated at 0.1% round-trip on Position Size</div>
+            <div style={{fontSize:11,color:"#848e9c",textAlign:"center",marginTop:10,fontStyle:"italic"}}>*Fees estimated at 0.1% round-trip</div>
           </div>
-        </div>
-        <div style={{background:"#1e2329",border:"1px solid #2b3139",borderRadius:12,padding:"14px 18px",marginTop:20,fontSize:12,color:"#848e9c",lineHeight:1.7}}>
-          <strong style={{color:"#eaecef"}}>How the math works:</strong> PnL % on Margin → Price Move % = PnL % ÷ Leverage → Platform Price = Entry × (1 ± Price Move %) → Gross PnL = Margin × (PnL% / 100) → Net PnL = Gross − Fees.<br/>
-          <em>Disclaimer: Educational estimate. Actual Binance fees, funding, and margin tiers may vary.</em>
         </div>
       </div>
     </div>
@@ -424,7 +452,7 @@ function CalcPage(){
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────
-function Dashboard({token}){
+function Dashboard({token, showToast}){
   const [trades,setTrades]=useState([]);
   const [startCap,setStartCap]=useState(10000);
   const [capEdit,setCapEdit]=useState(false);
@@ -440,13 +468,6 @@ function Dashboard({token}){
   const [activeTab,setActiveTab]=useState("log");
 
   const usedCoins=useMemo(()=>[...new Set(trades.map(t=>t.ticker).filter(Boolean))],[trades]);
-
-  const getToken=useCallback(async()=>{
-    const stored=localStorage.getItem("tl_token");
-    if(!stored)return null;
-    // Try to use stored, if expired refresh
-    return stored;
-  },[]);
 
   const fetchData=useCallback(async()=>{
     setLoadingData(true);
@@ -475,7 +496,8 @@ function Dashboard({token}){
       const row=await dbFetch("/rest/v1/trades","POST",{user_id:uid,date,ticker:ticker.trim().toUpperCase(),result:r,note:direction},tok,{"Prefer":"return=representation"});
       setTrades(prev=>[row[0],...prev]);
       setTicker("");setResult("");
-    }catch(e){setFormError(e.message);}
+      showToast("Trade logged successfully!", "success");
+    }catch(e){setFormError(e.message); showToast(e.message, "error");}
     finally{setSaving(false);}
   };
 
@@ -484,7 +506,8 @@ function Dashboard({token}){
       const tok=localStorage.getItem("tl_token");
       await dbFetch(`/rest/v1/trades?id=eq.${id}`,"DELETE",null,tok);
       setTrades(prev=>prev.filter(t=>t.id!==id));
-    }catch(e){alert("Delete failed: "+e.message);}
+      showToast("Trade deleted", "success");
+    }catch(e){showToast("Delete failed: "+e.message, "error");}
   };
 
   const saveCapital=async()=>{
@@ -495,10 +518,10 @@ function Dashboard({token}){
       const uid=JSON.parse(atob(tok.split(".")[1])).sub;
       await upsert("user_settings",{user_id:uid,starting_capital:v},tok);
       setStartCap(v);setCapEdit(false);
-    }catch(e){alert("Could not save: "+e.message);}
+      showToast("Capital updated successfully!", "success");
+    }catch(e){showToast("Could not save: "+e.message, "error");}
   };
 
-  // CSV Download
   const downloadCSV=()=>{
     const rows=[["Date","Ticker","Direction","Result ($)"]];
     [...trades].sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
@@ -508,6 +531,7 @@ function Dashboard({token}){
     const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");a.href=url;a.download=`tradelog_${todayStr()}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+    showToast("CSV downloaded!", "success");
   };
 
   const days=useMemo(()=>{
@@ -525,11 +549,10 @@ function Dashboard({token}){
   const best=days.length?Math.max(...days.map(d=>d.total)):0;
   const worst=days.length?Math.min(...days.map(d=>d.total)):0;
 
-  // Monthly chart data
   const monthlyData=useMemo(()=>{
     const map={};
     trades.forEach(t=>{
-      const m=t.date.slice(0,7); // YYYY-MM
+      const m=t.date.slice(0,7);
       if(!map[m])map[m]={month:m,total:0};
       map[m].total+=parseFloat(t.result);
     });
@@ -537,19 +560,16 @@ function Dashboard({token}){
   },[trades]);
 
   const maxAbsMonth=Math.max(...monthlyData.map(d=>Math.abs(d.total)),1);
-
   const fmtMonth=m=>{const[y,mo]=m.split("-");return new Date(y,mo-1).toLocaleDateString("en-US",{month:"short",year:"2-digit"});};
 
   return(
     <div style={{maxWidth:1020,margin:"0 auto",padding:"24px",display:"flex",flexDirection:"column",gap:20}}>
-      {/* CSV Button */}
       <div style={{display:"flex",justifyContent:"flex-end"}}>
         <button onClick={downloadCSV} style={{background:"#fff",color:"#2145e6",border:"1.5px solid #2145e6",borderRadius:10,padding:"9px 20px",fontFamily:"inherit",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>⬇ Download CSV</button>
       </div>
 
       {loadingData&&<div style={{textAlign:"center",padding:"40px",color:"#aab8e0"}}>Loading your trades…</div>}
       {!loadingData&&<>
-        {/* Stats */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14}} className="fade-up">
           <div style={{background:"linear-gradient(135deg,#1a3fd4,#0f2aab)",borderRadius:18,color:"#fff",padding:"24px 26px"}}>
             <div style={{fontSize:11,letterSpacing:1,opacity:0.55,fontWeight:600,textTransform:"uppercase",marginBottom:8}}>Current Capital</div>
@@ -571,34 +591,31 @@ function Dashboard({token}){
           <div className="card" style={{padding:"22px"}}><span className="lbl">Best / Worst Day</span><div style={{fontFamily:"'Instrument Serif',serif",fontSize:22,color:"#0ea55a"}}>+{fmt(best)}</div><div style={{fontFamily:"'Instrument Serif',serif",fontSize:18,color:"#e02044",marginTop:6}}>{fmt(worst)}</div></div>
         </div>
 
-        {/* Add Trade */}
         <div className="card fade-up" style={{padding:"22px 26px"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
             <div style={{fontFamily:"'Instrument Serif',serif",fontSize:17}}>Log a Trade</div>
             {formError&&<span style={{fontSize:12,color:"#e02044",fontWeight:600}}>{formError}</span>}
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"140px 1fr 1fr 140px 1fr auto",gap:12,alignItems:"flex-end"}}>
+          <div className="trade-form-grid">
             <div><span className="lbl">Date</span><input type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
             <div><span className="lbl">Ticker</span><CoinInput value={ticker} onChange={setTicker} usedCoins={usedCoins}/></div>
             <div><span className="lbl">Direction</span>
-              <select value={direction} onChange={e=>setDirection(e.target.value)} style={{background:"#f4f7ff",border:"1.5px solid #dce6ff",borderRadius:10,color:direction==="long"?"#2145e6":"#e02044",fontFamily:"inherit",fontSize:14,padding:"11px 14px",width:"100%",outline:"none",fontWeight:700}}>
+              <select value={direction} onChange={e=>setDirection(e.target.value)}>
                 <option value="long">🟢 LONG</option>
                 <option value="short">🔴 SHORT</option>
               </select>
             </div>
             <div><span className="lbl">Result ($)</span><input type="number" placeholder="120 or -45" value={result} onChange={e=>setResult(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTrade()}/></div>
-            <div style={{display:"flex",alignItems:"flex-end"}}><button className="btn-primary" onClick={addTrade} disabled={saving} style={{width:"100%"}}>{saving?"Saving…":"+ Add Trade"}</button></div>
+            <div style={{display:"flex",alignItems:"flex-end"}}><button className="btn-primary" onClick={addTrade} disabled={saving}>{saving?"Saving…":"+ Add Trade"}</button></div>
           </div>
         </div>
 
-        {/* Tabs */}
         <div style={{display:"flex",gap:6}}>
           {[["log","📋 Daily Log"],["chart","📊 Monthly Chart"]].map(([t,label])=>(
             <button key={t} className={`tab ${activeTab===t?"tab-active":"tab-inactive"}`} onClick={()=>setActiveTab(t)}>{label}</button>
           ))}
         </div>
 
-        {/* Monthly Chart */}
         {activeTab==="chart"&&(
           <div className="card fade-up" style={{padding:"24px 26px"}}>
             <div style={{fontFamily:"'Instrument Serif',serif",fontSize:18,marginBottom:4}}>Monthly PNL Overview</div>
@@ -617,7 +634,6 @@ function Dashboard({token}){
                     );
                   })}
                 </div>
-                {/* Month summary row */}
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:10,marginTop:8}}>
                   {monthlyData.slice(-3).reverse().map(d=>(
                     <div key={d.month} style={{background:"#f7f9ff",borderRadius:10,padding:"10px 14px",border:"1px solid #e8eeff"}}>
@@ -631,12 +647,11 @@ function Dashboard({token}){
           </div>
         )}
 
-        {/* Daily Log */}
         {activeTab==="log"&&(
           <div className="fade-up" style={{display:"flex",flexDirection:"column",gap:10}}>
             {days.length===0?<div className="card" style={{padding:"52px",textAlign:"center",color:"#aab8e0"}}>No trades yet. Log your first trade above.</div>:days.map(day=>(
               <div key={day.date} className="day-row">
-                <div onClick={()=>setExpandedDay(expandedDay===day.date?null:day.date)} style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:16,alignItems:"center",padding:"16px 22px",cursor:"pointer"}}>
+                <div className="day-row-grid" onClick={()=>setExpandedDay(expandedDay===day.date?null:day.date)}>
                   <div>
                     <div style={{fontWeight:700,fontSize:15}}>{fmtDate(day.date)}</div>
                     <div style={{fontSize:12,color:"#aab8e0",marginTop:2}}>{day.trades.length} trade{day.trades.length!==1?"s":""}</div>
@@ -649,13 +664,15 @@ function Dashboard({token}){
                 </div>
                 {expandedDay===day.date&&(
                   <div style={{background:"#f7f9ff",padding:"4px 22px 16px",display:"flex",flexDirection:"column",gap:7}}>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 80px 120px 80px",gap:12,padding:"4px 14px",fontSize:10,color:"#aab8e0",letterSpacing:0.8,fontWeight:600,textTransform:"uppercase"}}><div>Ticker</div><div>Direction</div><div>Result</div><div></div></div>
+                    <div className="trade-item-grid" style={{background:"transparent", border:"none", padding:"4px 14px", fontSize:10, color:"#aab8e0", letterSpacing:0.8, fontWeight:600, textTransform:"uppercase"}}>
+                      <div>Ticker</div><div>Direction</div><div>Result</div><div></div>
+                    </div>
                     {day.trades.map(t=>(
-                      <div key={t.id} style={{display:"grid",gridTemplateColumns:"1fr 80px 120px 80px",gap:12,alignItems:"center",background:"#fff",border:"1px solid #e8eeff",borderRadius:10,padding:"11px 14px",fontSize:13}}>
+                      <div key={t.id} className="trade-item-grid">
                         <div style={{fontWeight:700,color:"#2145e6"}}>{t.ticker||"—"}</div>
                         <div><span className={t.note==="long"?"chip-long":"chip-short"}>{t.note==="long"?"▲ LONG":"▼ SHORT"}</span></div>
                         <span className={`chip ${parseFloat(t.result)>0?"chip-pos":parseFloat(t.result)<0?"chip-neg":"chip-zero"}`}>{parseFloat(t.result)>0?"+":""}{fmt(t.result)}</span>
-                        <button className="btn-ghost" onClick={()=>deleteTrade(t.id)}>✕</button>
+                        <div><button className="btn-ghost" onClick={()=>deleteTrade(t.id)}>✕ Delete</button></div>
                       </div>
                     ))}
                   </div>
@@ -675,6 +692,14 @@ function App(){
   const [profile,setProfile]=useState(null);
   const [trades,setTrades]=useState([]);
   const [page,setPage]=useState("dashboard");
+  const [toasts,setToasts]=useState([]); // Toast state
+
+  // Global Toast Handler
+  const showToast=(msg, type="success")=>{
+    const id=Date.now();
+    setToasts(p=>[...p,{id,msg,type}]);
+    setTimeout(()=>setToasts(p=>p.filter(t=>t.id!==id)),3000);
+  };
 
   const onLogin=(tok)=>{localStorage.setItem("tl_token",tok);setToken(tok);};
   const onLogout=()=>{localStorage.removeItem("tl_token");localStorage.removeItem("tl_refresh");setToken(null);setProfile(null);setPage("dashboard");};
@@ -700,14 +725,24 @@ function App(){
   return(
     <div style={{minHeight:"100vh",background:page==="calculator"?"#0b0e11":"#f0f4ff",fontFamily:"'Plus Jakarta Sans',sans-serif",color:"#0f1a3a"}}>
       <style>{STYLES}</style>
+      
+      {/* Toast Notification Container */}
+      <div className="toast-container">
+        {toasts.map(t=>(
+          <div key={t.id} className={`toast ${t.type==="success"?"toast-success":"toast-error"}`}>
+            {t.msg}
+          </div>
+        ))}
+      </div>
+
       {/* Header */}
       <div style={{background:"#fff",borderBottom:"1px solid #dce6ff",padding:"0 20px",position:"sticky",top:0,zIndex:100}}>
-        <div style={{maxWidth:1020,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:60,gap:12}}>
+        <div className="top-header-container">
           <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
             <div style={{width:32,height:32,background:"linear-gradient(135deg,#2145e6,#0f2aab)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,color:"#fff"}}>◈</div>
             <span style={{fontFamily:"'Instrument Serif',serif",fontSize:20}}>TradeLog</span>
           </div>
-          <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          <div className="top-nav-tabs">
             {[["dashboard","📋 Dashboard"],["calculator","⚡ Calculator"],["profile","👤 Profile"]].map(([p,label])=>(
               <button key={p} className={`nav-tab ${page===p?"nav-active":"nav-inactive"}`} onClick={()=>setPage(p)} style={{fontSize:12,padding:"7px 14px"}}>{label}</button>
             ))}
@@ -722,7 +757,7 @@ function App(){
         </div>
       </div>
 
-      {page==="dashboard"&&<Dashboard token={token}/>}
+      {page==="dashboard"&&<Dashboard token={token} showToast={showToast}/>}
       {page==="calculator"&&<CalcPage/>}
       {page==="profile"&&<ProfilePage profile={profile} trades={trades} token={token} onLogout={onLogout}/>}
     </div>
