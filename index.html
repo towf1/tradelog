@@ -7,7 +7,43 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <style>*{box-sizing:border-box;margin:0;padding:0;}</style>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --blue:#2563EB;--blue-dark:#1D4ED8;--blue-light:#EFF6FF;--blue-mid:#DBEAFE;
+      --green:#10B981;--green-light:#ECFDF5;
+      --red:#EF4444;--red-light:#FEF2F2;
+      --gold:#F59E0B;--gold-light:#FFFBEB;
+      --gray-50:#F8FAFC;--gray-100:#F1F5F9;--gray-200:#E2E8F0;--gray-300:#CBD5E1;
+      --gray-400:#94A3B8;--gray-500:#64748B;--gray-600:#475569;--gray-700:#334155;
+      --gray-800:#1E293B;--gray-900:#0F172A;
+      --white:#FFFFFF;
+      --shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+      --shadow:0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg:0 20px 40px rgba(37,99,235,0.12);
+      --radius:16px;--radius-sm:10px;--radius-xs:8px;
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--gray-50);color:var(--gray-800);}
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:4px}
+    input[type=text],input[type=number],input[type=date],input[type=email],input[type=password]{
+      background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);
+      color:var(--gray-800);font-family:'DM Sans',sans-serif;font-size:14px;padding:12px 16px;width:100%;outline:none;
+      transition:all 0.2s;
+    }
+    input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.1);background:var(--white);}
+    input::placeholder{color:var(--gray-400);}
+    select{background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);color:var(--gray-800);font-family:'DM Sans',sans-serif;font-size:14px;padding:12px 16px;width:100%;outline:none;cursor:pointer;transition:all 0.2s;}
+    select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+    input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--gray-200);outline:none;cursor:pointer;}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--blue);cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,0.3);}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes scaleIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .fade-up{animation:fadeUp 0.4s ease both;}
+    .scale-in{animation:scaleIn 0.3s ease both;}
+  </style>
 </head>
 <body>
 <div id="root"></div>
@@ -17,149 +53,97 @@ const {useState,useMemo,useEffect,useCallback,useRef}=React;
 const SUPABASE_URL="https://mhbumikrwpwrayedozec.supabase.co";
 const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oYnVtaWtyd3B3cmF5ZWRvemVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzUwMzEsImV4cCI6MjA5MzcxMTAzMX0.zXshcM476oUJ3-UhKpiRbaQDDvhoAr1rLG3EpBAlrAo";
 
-// ── Auth refresh helper ──
 const refreshToken=async()=>{
-  const rt=localStorage.getItem("tl_refresh");
-  if(!rt)return null;
-  try{
-    const res=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},body:JSON.stringify({refresh_token:rt})});
-    const d=await res.json();
-    if(d.access_token){localStorage.setItem("tl_token",d.access_token);if(d.refresh_token)localStorage.setItem("tl_refresh",d.refresh_token);return d.access_token;}
-  }catch{}
-  return null;
+  const rt=localStorage.getItem("tl_refresh");if(!rt)return null;
+  try{const res=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},body:JSON.stringify({refresh_token:rt})});
+  const d=await res.json();if(d.access_token){localStorage.setItem("tl_token",d.access_token);if(d.refresh_token)localStorage.setItem("tl_refresh",d.refresh_token);return d.access_token;}}catch{}return null;
 };
-
 const dbFetch=async(path,method="GET",body=null,token=null,extra={})=>{
-  const doReq=async(tok)=>{
-    const h={"Content-Type":"application/json","apikey":SUPABASE_KEY,...extra};
-    if(tok)h["Authorization"]=`Bearer ${tok}`;
-    const r=await fetch(`${SUPABASE_URL}${path}`,{method,headers:h,body:body?JSON.stringify(body):null});
-    return r;
-  };
+  const doReq=async(tok)=>{const h={"Content-Type":"application/json","apikey":SUPABASE_KEY,...extra};if(tok)h["Authorization"]=`Bearer ${tok}`;return fetch(`${SUPABASE_URL}${path}`,{method,headers:h,body:body?JSON.stringify(body):null});};
   let res=await doReq(token);
-  if(res.status===401&&token){
-    const nt=await refreshToken();
-    if(nt){res=await doReq(nt);}
-  }
+  if(res.status===401&&token){const nt=await refreshToken();if(nt){token=nt;res=await doReq(nt);}}
   if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||e.error_description||"Failed");}
   const t=await res.text();return t?JSON.parse(t):null;
 };
-
 const authFetch=async(path,body)=>{
   const res=await fetch(`${SUPABASE_URL}/auth/v1${path}`,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},body:JSON.stringify(body)});
   const d=await res.json();if(!res.ok)throw new Error(d.error_description||d.msg||"Auth failed");return d;
 };
-
 const upsert=(path,body,token)=>dbFetch(`/rest/v1/${path}`,"POST",body,token,{"Prefer":"resolution=merge-duplicates,return=representation"});
+const getToken=()=>localStorage.getItem("tl_token");
+const getUID=()=>{try{return JSON.parse(atob(getToken().split(".")[1])).sub;}catch{return null;}};
 
 const fmt=v=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2}).format(v);
+const fmtShort=v=>{const a=Math.abs(v);return a>=1000?`${v<0?"-":""}$${(a/1000).toFixed(1)}k`:fmt(v);};
 const fmtDate=d=>new Date(d+"T00:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+const fmtMonth=m=>{const[y,mo]=m.split("-");return new Date(parseInt(y),parseInt(mo)-1).toLocaleDateString("en-US",{month:"short",year:"2-digit"});};
 const todayStr=()=>new Date().toISOString().slice(0,10);
 
-const COIN_LIST=["BTC","ETH","BNB","SOL","XRP","ADA","DOGE","AVAX","DOT","MATIC","LINK","LTC","UNI","ATOM","TRX","NEAR","APT","OP","ARB","INJ","TIA","SUI","SEI","JUP","WIF","BONK","PEPE","FLOKI","SHIB","FET","RNDR","GRT","SAND","MANA","AXS","GALA","IMX","LRC","ENJ","CHZ","ALGO","ICP","FIL","EOS","XLM","VET","HBAR","THETA","AAVE","SNX","MKR","COMP","CRV","BAL","YFI","SUSHI","1INCH","ZEC","XMR","DASH","ETC","BCH","BSV"];
+const COINS=["BTC","ETH","BNB","SOL","XRP","ADA","DOGE","AVAX","DOT","MATIC","LINK","LTC","UNI","ATOM","TRX","NEAR","APT","OP","ARB","INJ","TIA","SUI","SEI","JUP","WIF","BONK","PEPE","FLOKI","SHIB","FET","RNDR","GRT","SAND","MANA","AXS","GALA","IMX","ALGO","ICP","FIL","EOS","XLM","VET","HBAR","AAVE","MKR","COMP","CRV","SUSHI","ZEC","XMR","ETC","BCH"];
 
-const STYLES=`
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#c5d3f5;border-radius:4px}
-body{font-family:'Plus Jakarta Sans',sans-serif;}
-.card{background:#fff;border-radius:18px;border:1px solid #dce6ff;box-shadow:0 2px 12px rgba(30,80,220,0.06);}
-input[type=text],input[type=number],input[type=date],input[type=email],input[type=password]{background:#f4f7ff;border:1.5px solid #dce6ff;border-radius:10px;color:#0f1a3a;font-family:inherit;font-size:14px;padding:11px 14px;width:100%;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
-input:focus{border-color:#3b5df5;box-shadow:0 0 0 3px rgba(59,93,245,0.12);}
-input::placeholder{color:#aab8e0;}
-select{background:#f4f7ff;border:1.5px solid #dce6ff;border-radius:10px;color:#0f1a3a;font-family:inherit;font-size:14px;padding:11px 14px;width:100%;outline:none;cursor:pointer;}
-.btn-blue{background:linear-gradient(135deg,#2145e6,#0f2aab);color:#fff;border:none;border-radius:12px;padding:14px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;width:100%;transition:all 0.15s;}
-.btn-blue:hover{opacity:0.9;transform:translateY(-1px);}
-.btn-blue:disabled{background:#a0b4f5;cursor:not-allowed;transform:none;}
-.btn-primary{background:#2145e6;color:#fff;border:none;border-radius:11px;padding:12px 24px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
-.btn-primary:hover{background:#1a35c4;transform:translateY(-1px);}
-.btn-primary:disabled{background:#a0b4f5;cursor:not-allowed;transform:none;}
-.btn-ghost{background:none;border:1.5px solid #dce6ff;color:#6b85c5;border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;transition:all 0.15s;}
-.btn-ghost:hover{border-color:#e02044;color:#e02044;}
-.day-row{background:#fff;border:1.5px solid #dce6ff;border-radius:14px;overflow:hidden;transition:border-color 0.2s;}
-.day-row:hover{border-color:#a0b4f5;box-shadow:0 2px 14px rgba(30,80,220,0.08);}
-.chip{border-radius:7px;padding:3px 10px;font-size:12px;font-weight:700;}
-.chip-pos{background:#e8fff3;color:#0ea55a;}
-.chip-neg{background:#fff0f3;color:#e02044;}
-.chip-zero{background:#f0f4ff;color:#6b85c5;}
-.chip-long{background:rgba(33,69,230,0.1);color:#2145e6;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;}
-.chip-short{background:rgba(224,32,68,0.1);color:#e02044;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;}
-.nav-tab{padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;transition:all 0.15s;border:none;font-family:inherit;display:flex;align-items:center;gap:6px;}
-.nav-active{background:#2145e6;color:#fff;}
-.nav-inactive{background:none;color:#6b85c5;}
-.nav-inactive:hover{background:#eef1ff;color:#2145e6;}
-.tab{padding:8px 16px;border-radius:9px;cursor:pointer;font-weight:600;font-size:13px;transition:all 0.15s;border:none;font-family:inherit;}
-.tab-active{background:#2145e6;color:#fff;}
-.tab-inactive{background:none;color:#6b85c5;}
-.tab-inactive:hover{background:#eef1ff;}
-.lbl{font-size:11px;color:#8fa4d4;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;display:block;margin-bottom:6px;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{animation:fadeUp 0.3s ease both;}
-.suggest-box{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #dce6ff;border-radius:10px;box-shadow:0 8px 24px rgba(30,80,220,0.12);z-index:200;max-height:180px;overflow-y:auto;margin-top:4px;}
-.suggest-item{padding:10px 14px;cursor:pointer;font-size:14px;transition:background 0.1s;}
-.suggest-item:hover{background:#f0f4ff;color:#2145e6;font-weight:600;}
-/* Calc */
-.calc-card{background:#1e2329;border:1px solid #2b3139;border-radius:16px;padding:22px;}
-.calc-input{width:100%;padding:10px 12px;background:#2b3139;border:1px solid #2b3139;border-radius:8px;color:#eaecef;font-size:0.95rem;outline:none;transition:border-color 0.2s;font-family:inherit;}
-.calc-input:focus{border-color:#f0b90b;}
-.dir-btn{flex:1;padding:10px;border:1px solid #2b3139;background:#2b3139;color:#eaecef;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;transition:all 0.2s;font-family:inherit;}
-.dir-btn.long-active{background:rgba(14,203,129,0.15);border-color:#0ecb81;color:#0ecb81;}
-.dir-btn.short-active{background:rgba(246,70,93,0.15);border-color:#f6465d;color:#f6465d;}
-.res-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #2b3139;}
-.res-row:last-child{border-bottom:none;}
-.scen-tp{background:rgba(14,203,129,0.08);border:1px solid rgba(14,203,129,0.25);border-radius:12px;padding:16px;margin-top:12px;}
-.scen-sl{background:rgba(246,70,93,0.08);border:1px solid rgba(246,70,93,0.25);border-radius:12px;padding:16px;margin-top:10px;}
-.liq-banner{background:rgba(246,70,93,0.1);border:1px solid rgba(246,70,93,0.3);border-radius:10px;padding:12px 16px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;}
-.plat-price{background:rgba(240,185,11,0.1);border:1px solid rgba(240,185,11,0.3);border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;}
-input[type=range]{width:100%;accent-color:#f0b90b;}
-/* Profile */
-.profile-stat{background:#f7f9ff;border:1px solid #e8eeff;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;}
-`;
+// ── COMPONENTS ────────────────────────────────────────────────
+const Card=({children,style={},...p})=><div style={{background:"#fff",borderRadius:16,border:"1px solid #E2E8F0",boxShadow:"0 2px 12px rgba(0,0,0,0.05)",...style}} {...p}>{children}</div>;
 
-// ── COIN AUTOCOMPLETE ─────────────────────────────────────────
-function CoinInput({value,onChange,usedCoins}){
-  const [show,setShow]=useState(false);
-  const ref=useRef();
-  const suggestions=useMemo(()=>{
-    if(!value)return[];
-    const v=value.toUpperCase();
-    const all=[...new Set([...usedCoins,...COIN_LIST])];
-    return all.filter(c=>c.startsWith(v)&&c!==v).slice(0,8);
-  },[value,usedCoins]);
+const Badge=({children,type="pos"})=>{
+  const styles={pos:{background:"#ECFDF5",color:"#059669"},neg:{background:"#FEF2F2",color:"#DC2626"},zero:{background:"#F1F5F9",color:"#64748B"},long:{background:"#EFF6FF",color:"#2563EB"},short:{background:"#FFF7ED",color:"#EA580C"}};
+  return<span style={{...styles[type],borderRadius:6,padding:"3px 10px",fontSize:12,fontWeight:700,display:"inline-block"}}>{children}</span>;
+};
 
-  useEffect(()=>{
-    const h=e=>{if(ref.current&&!ref.current.contains(e.target))setShow(false);};
-    document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);
-  },[]);
+const StatCard=({icon,label,value,sub,color="#2563EB",gradient=false,children})=>(
+  <Card style={{padding:"22px 24px",background:gradient?"linear-gradient(135deg,#2563EB,#1D4ED8)":"#fff",color:gradient?"#fff":"inherit"}}>
+    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:14}}>
+      <div style={{width:42,height:42,borderRadius:12,background:gradient?"rgba(255,255,255,0.15)":"#EFF6FF",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{icon}</div>
+      {sub&&<span style={{fontSize:11,fontWeight:600,color:gradient?"rgba(255,255,255,0.7)":"#94A3B8",letterSpacing:0.5,textTransform:"uppercase"}}>{label}</span>}
+    </div>
+    {!sub&&<div style={{fontSize:11,fontWeight:600,color:gradient?"rgba(255,255,255,0.7)":"#94A3B8",letterSpacing:0.5,textTransform:"uppercase",marginBottom:6}}>{label}</div>}
+    <div style={{fontFamily:"'Sora',sans-serif",fontSize:26,fontWeight:700,color:gradient?"#fff":color,letterSpacing:"-0.5px"}}>{value}</div>
+    {sub&&<div style={{fontSize:12,color:gradient?"rgba(255,255,255,0.6)":"#94A3B8",marginTop:4}}>{sub}</div>}
+    {children}
+  </Card>
+);
 
+// Donut chart
+const Donut=({win,loss,size=120})=>{
+  const total=win+loss;if(!total)return<div style={{width:size,height:size,borderRadius:"50%",background:"#F1F5F9",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"#94A3B8"}}>No data</div>;
+  const winPct=win/total,r=46,cx=60,cy=60,circ=2*Math.PI*r;
+  const winArc=circ*winPct,lossArc=circ*(1-winPct);
+  return(
+    <div style={{position:"relative",width:size,height:size}}>
+      <svg width={size} height={size} viewBox="0 0 120 120">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#FEE2E2" strokeWidth="14"/>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#10B981" strokeWidth="14" strokeDasharray={`${winArc} ${lossArc}`} strokeDashoffset={circ*0.25} strokeLinecap="round" style={{transition:"stroke-dasharray 0.6s ease"}}/>
+      </svg>
+      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:"#1E293B"}}>{(winPct*100).toFixed(0)}%</div>
+        <div style={{fontSize:10,color:"#94A3B8",fontWeight:500}}>WIN</div>
+      </div>
+    </div>
+  );
+};
+
+// Coin autocomplete
+const CoinInput=({value,onChange,usedCoins})=>{
+  const [show,setShow]=useState(false);const ref=useRef();
+  const suggestions=useMemo(()=>{if(!value)return[];const v=value.toUpperCase();return[...new Set([...usedCoins,...COINS])].filter(c=>c.startsWith(v)&&c!==v).slice(0,7);},[value,usedCoins]);
+  useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setShow(false);};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
   return(
     <div ref={ref} style={{position:"relative"}}>
-      <input type="text" placeholder="BTC, ETH…" value={value}
-        onChange={e=>{onChange(e.target.value.toUpperCase());setShow(true);}}
-        onFocus={()=>setShow(true)}
-        style={{background:"#f4f7ff",border:"1.5px solid #dce6ff",borderRadius:10,color:"#0f1a3a",fontFamily:"inherit",fontSize:14,padding:"11px 14px",width:"100%",outline:"none"}}
-      />
+      <input type="text" placeholder="BTC, ETH…" value={value} onChange={e=>{onChange(e.target.value.toUpperCase());setShow(true);}} onFocus={()=>setShow(true)}/>
       {show&&suggestions.length>0&&(
-        <div className="suggest-box">
-          {suggestions.map(c=>(
-            <div key={c} className="suggest-item" onMouseDown={()=>{onChange(c);setShow(false);}}>{c}</div>
-          ))}
+        <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1.5px solid #E2E8F0",borderRadius:10,boxShadow:"0 8px 24px rgba(0,0,0,0.1)",zIndex:300,marginTop:4,overflow:"hidden"}}>
+          {suggestions.map(c=><div key={c} onMouseDown={()=>{onChange(c);setShow(false);}} style={{padding:"10px 16px",cursor:"pointer",fontSize:14,fontWeight:500,transition:"background 0.1s"}} onMouseEnter={e=>e.target.style.background="#EFF6FF"} onMouseLeave={e=>e.target.style.background=""}>{c}</div>)}
         </div>
       )}
     </div>
   );
-}
+};
 
 // ── AUTH ──────────────────────────────────────────────────────
 function AuthScreen({onLogin}){
   const [mode,setMode]=useState("login");
-  const [fullName,setFullName]=useState("");
-  const [birthday,setBirthday]=useState("");
-  const [email,setEmail]=useState("");
-  const [password,setPassword]=useState("");
-  const [loading,setLoading]=useState(false);
-  const [error,setError]=useState("");
-  const [success,setSuccess]=useState("");
+  const [fullName,setFullName]=useState("");const[birthday,setBirthday]=useState("");
+  const [email,setEmail]=useState("");const[password,setPassword]=useState("");
+  const [loading,setLoading]=useState(false);const[error,setError]=useState("");const[success,setSuccess]=useState("");
   const sw=m=>{setMode(m);setError("");setSuccess("");};
 
   const handle=async()=>{
@@ -170,255 +154,315 @@ function AuthScreen({onLogin}){
     if(mode==="signup"&&!birthday){setError("Enter your birthday.");return;}
     setLoading(true);
     try{
-      if(mode==="login"){
-        const d=await authFetch("/token?grant_type=password",{email,password});
-        localStorage.setItem("tl_refresh",d.refresh_token||"");
-        onLogin(d.access_token,d.user);
-      } else {
-        const d=await authFetch("/signup",{email,password});
-        if(d.access_token&&d.user?.id){
-          localStorage.setItem("tl_refresh",d.refresh_token||"");
-          await upsert("profiles",{user_id:d.user.id,full_name:fullName.trim(),birthday},d.access_token);
-          onLogin(d.access_token,d.user);
-        } else {setSuccess("Account created! Please sign in.");sw("login");}
-      }
-    }catch(e){setError(e.message);}
-    finally{setLoading(false);}
+      if(mode==="login"){const d=await authFetch("/token?grant_type=password",{email,password});localStorage.setItem("tl_refresh",d.refresh_token||"");onLogin(d.access_token);}
+      else{const d=await authFetch("/signup",{email,password});
+        if(d.access_token&&d.user?.id){localStorage.setItem("tl_refresh",d.refresh_token||"");await upsert("profiles",{user_id:d.user.id,full_name:fullName.trim(),birthday},d.access_token);onLogin(d.access_token);}
+        else{setSuccess("Account created! Please sign in.");sw("login");}}
+    }catch(e){setError(e.message);}finally{setLoading(false);}
   };
 
   return(
-    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#e8eeff,#f5f8ff,#dce8ff)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Plus Jakarta Sans',sans-serif",padding:"24px"}}>
-      <style>{STYLES}</style>
-      <div style={{background:"#fff",borderRadius:24,border:"1px solid #dce6ff",boxShadow:"0 8px 48px rgba(30,80,220,0.12)",padding:"44px 40px",width:"100%",maxWidth:440,animation:"fadeUp 0.4s ease both"}}>
-        <div style={{textAlign:"center",marginBottom:30}}>
-          <div style={{width:52,height:52,background:"linear-gradient(135deg,#2145e6,#0f2aab)",borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,color:"#fff",margin:"0 auto 14px"}}>◈</div>
-          <div style={{fontFamily:"'Instrument Serif',serif",fontSize:28,color:"#0f1a3a"}}>TradeLog</div>
-          <div style={{fontSize:13,color:"#aab8e0",marginTop:5}}>{mode==="login"?"Welcome back! Sign in to continue":"Create your TradeLog account"}</div>
-        </div>
-        {error&&<div style={{background:"#fff0f3",border:"1px solid #ffc5cf",borderRadius:10,padding:"11px 14px",fontSize:13,color:"#e02044",marginBottom:16,fontWeight:600}}>{error}</div>}
-        {success&&<div style={{background:"#e8fff3",border:"1px solid #a3f0c8",borderRadius:10,padding:"11px 14px",fontSize:13,color:"#0ea55a",marginBottom:16,fontWeight:600}}>{success}</div>}
-        <div style={{display:"flex",flexDirection:"column",gap:13}}>
-          {mode==="signup"&&<>
-            <div><span className="lbl">Full Name</span><input type="text" placeholder="e.g. Towfiq Ahmed" value={fullName} onChange={e=>setFullName(e.target.value)}/></div>
-            <div><span className="lbl">Birthday</span><input type="date" value={birthday} onChange={e=>setBirthday(e.target.value)}/></div>
-          </>}
-          <div><span className="lbl">Email</span><input type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
-          <div><span className="lbl">Password</span><input type="password" placeholder="Min. 6 characters" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
-          <button className="btn-blue" onClick={handle} disabled={loading} style={{marginTop:4}}>{loading?"Please wait…":mode==="login"?"Sign In":"Create Account"}</button>
-        </div>
-        <div style={{textAlign:"center",marginTop:20,fontSize:13,color:"#aab8e0"}}>
-          {mode==="login"?"Don't have an account? ":"Already have an account? "}
-          <span onClick={()=>sw(mode==="login"?"signup":"login")} style={{color:"#2145e6",fontWeight:700,cursor:"pointer"}}>{mode==="login"?"Sign Up":"Sign In"}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── PROFILE PAGE ──────────────────────────────────────────────
-function ProfilePage({profile,trades,token,onLogout}){
-  const days=useMemo(()=>{
-    const map={};
-    trades.forEach(t=>{if(!map[t.date])map[t.date]={trades:[],total:0};map[t.date].trades.push(t);map[t.date].total+=parseFloat(t.result);});
-    return Object.values(map);
-  },[trades]);
-
-  const totalInvested=trades.reduce((s,t)=>s+Math.abs(parseFloat(t.result)),0);
-  const winDays=days.filter(d=>d.total>0).length;
-  const lossDays=days.filter(d=>d.total<0).length;
-  const winTrades=trades.filter(t=>parseFloat(t.result)>0).length;
-  const lossTrades=trades.filter(t=>parseFloat(t.result)<0).length;
-  const totalPNL=days.reduce((s,d)=>s+d.total,0);
-  const bestDay=days.length?Math.max(...days.map(d=>d.total)):0;
-  const worstDay=days.length?Math.min(...days.map(d=>d.total)):0;
-  const avgDaily=days.length?totalPNL/days.length:0;
-
-  // Coin stats
-  const coinMap={};
-  trades.forEach(t=>{const c=t.ticker||"OTHER";if(!coinMap[c])coinMap[c]={count:0,pnl:0};coinMap[c].count++;coinMap[c].pnl+=parseFloat(t.result);});
-  const coinList=Object.entries(coinMap).sort((a,b)=>b[1].count-a[1].count).slice(0,6);
-  const mostTraded=coinList[0]?.[0]||"—";
-
-  const initials=profile?.full_name?profile.full_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"?";
-  const bdayStr=profile?.birthday?new Date(profile.birthday+"T00:00:00").toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}):"—";
-  const memberSince=profile?.created_at?new Date(profile.created_at).toLocaleDateString("en-US",{month:"long",year:"numeric"}):"—";
-
-  const statCard=(label,value,sub,color="#0f1a3a")=>(
-    <div className="profile-stat">
-      <div style={{fontSize:11,color:"#8fa4d4",fontWeight:600,textTransform:"uppercase",letterSpacing:0.8}}>{label}</div>
-      <div style={{fontFamily:"'Instrument Serif',serif",fontSize:24,color,fontWeight:400,marginTop:2}}>{value}</div>
-      {sub&&<div style={{fontSize:12,color:"#aab8e0"}}>{sub}</div>}
-    </div>
-  );
-
-  return(
-    <div style={{maxWidth:900,margin:"0 auto",padding:"28px 24px",display:"flex",flexDirection:"column",gap:24}} className="fade-up">
-      {/* Profile Card */}
-      <div className="card" style={{padding:"32px 36px",display:"flex",gap:28,alignItems:"center",flexWrap:"wrap"}}>
-        <div style={{width:80,height:80,borderRadius:"50%",background:"linear-gradient(135deg,#2145e6,#0f2aab)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:800,fontSize:28,flexShrink:0}}>{initials}</div>
-        <div style={{flex:1,minWidth:200}}>
-          <div style={{fontFamily:"'Instrument Serif',serif",fontSize:28,color:"#0f1a3a"}}>{profile?.full_name||"Trader"}</div>
-          <div style={{fontSize:13,color:"#aab8e0",marginTop:4,display:"flex",gap:16,flexWrap:"wrap"}}>
-            <span>🎂 {bdayStr}</span>
-            {memberSince!=="—"&&<span>📅 Member since {memberSince}</span>}
-            <span>📊 {trades.length} total trades</span>
-          </div>
-        </div>
-        <button onClick={onLogout} style={{background:"#fff0f3",border:"1px solid #ffc5cf",color:"#e02044",borderRadius:10,padding:"9px 20px",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:700}}>Sign Out</button>
-      </div>
-
-      {/* Stats Grid */}
-      <div>
-        <div style={{fontFamily:"'Instrument Serif',serif",fontSize:20,marginBottom:14,color:"#0f1a3a"}}>Trading Statistics</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12}}>
-          {statCard("Total Trades",trades.length,`${winTrades} wins · ${lossTrades} losses`)}
-          {statCard("Total PNL",fmt(totalPNL),"All time",totalPNL>=0?"#0ea55a":"#e02044")}
-          {statCard("Day Win Rate",`${days.length?(winDays/days.length*100).toFixed(1):0}%`,`${winDays}W · ${lossDays}L`)}
-          {statCard("Trade Win Rate",`${trades.length?(winTrades/trades.length*100).toFixed(1):0}%`,`${winTrades} profitable trades`)}
-          {statCard("Best Day",fmt(bestDay),"Single day high","#0ea55a")}
-          {statCard("Worst Day",fmt(worstDay),"Single day low","#e02044")}
-          {statCard("Avg Daily PNL",fmt(avgDaily),"Per trading day",avgDaily>=0?"#0ea55a":"#e02044")}
-          {statCard("Most Traded",mostTraded,coinList[0]?`${coinList[0][1].count} trades`:"—","#2145e6")}
-        </div>
-      </div>
-
-      {/* Coin Breakdown */}
-      {coinList.length>0&&(
+    <div style={{minHeight:"100vh",display:"flex",fontFamily:"'DM Sans',sans-serif"}}>
+      {/* Left panel */}
+      <div style={{flex:"0 0 480px",background:"linear-gradient(145deg,#1D4ED8,#2563EB,#3B82F6)",padding:"60px 48px",display:"flex",flexDirection:"column",justifyContent:"space-between",color:"#fff",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-80,right:-80,width:320,height:320,borderRadius:"50%",background:"rgba(255,255,255,0.06)"}}/>
+        <div style={{position:"absolute",bottom:-60,left:-60,width:240,height:240,borderRadius:"50%",background:"rgba(255,255,255,0.05)"}}/>
         <div>
-          <div style={{fontFamily:"'Instrument Serif',serif",fontSize:20,marginBottom:14,color:"#0f1a3a"}}>Coin Performance</div>
-          <div className="card" style={{overflow:"hidden"}}>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 80px 100px 100px",gap:12,padding:"12px 20px",fontSize:11,color:"#8fa4d4",fontWeight:600,textTransform:"uppercase",letterSpacing:0.8,borderBottom:"1px solid #f0f4ff"}}>
-              <div>Coin</div><div style={{textAlign:"center"}}>Trades</div><div style={{textAlign:"right"}}>Total PNL</div><div style={{textAlign:"right"}}>Avg/Trade</div>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:64}}>
+            <div style={{width:40,height:40,borderRadius:12,background:"rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>◈</div>
+            <span style={{fontFamily:"'Sora',sans-serif",fontSize:22,fontWeight:700}}>TradeLog</span>
+          </div>
+          <div style={{fontFamily:"'Sora',sans-serif",fontSize:36,fontWeight:700,lineHeight:1.2,marginBottom:16}}>Track every trade.<br/>Grow every day.</div>
+          <div style={{fontSize:15,opacity:0.75,lineHeight:1.7}}>Log your crypto trades, calculate PnL, and analyze performance — all in one place.</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          {[["📊","Per-trade PnL tracking"],["⚡","Binance Futures calculator"],["📈","Monthly performance charts"],["👤","Profile & coin analytics"]].map(([icon,text])=>(
+            <div key={text} style={{display:"flex",alignItems:"center",gap:12,fontSize:14,opacity:0.85}}>
+              <span style={{fontSize:18}}>{icon}</span><span>{text}</span>
             </div>
-            {coinList.map(([coin,data],i)=>(
-              <div key={coin} style={{display:"grid",gridTemplateColumns:"1fr 80px 100px 100px",gap:12,padding:"14px 20px",borderBottom:i<coinList.length-1?"1px solid #f7f9ff":"none",alignItems:"center"}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <div style={{width:32,height:32,borderRadius:"50%",background:"linear-gradient(135deg,#e8eeff,#dce6ff)",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:12,color:"#2145e6"}}>{coin.slice(0,2)}</div>
-                  <span style={{fontWeight:700,fontSize:14}}>{coin}</span>
-                </div>
-                <div style={{textAlign:"center",color:"#6b85c5",fontWeight:600}}>{data.count}</div>
-                <div style={{textAlign:"right",fontWeight:700,color:data.pnl>=0?"#0ea55a":"#e02044"}}>{data.pnl>=0?"+":""}{fmt(data.pnl)}</div>
-                <div style={{textAlign:"right",color:"#6b85c5",fontSize:13}}>{fmt(data.pnl/data.count)}</div>
-              </div>
-            ))}
+          ))}
+        </div>
+      </div>
+
+      {/* Right panel */}
+      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 24px",background:"#F8FAFC"}}>
+        <div style={{width:"100%",maxWidth:420,animation:"fadeUp 0.4s ease both"}}>
+          <div style={{marginBottom:32}}>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:28,fontWeight:700,color:"#0F172A",marginBottom:8}}>{mode==="login"?"Welcome back 👋":"Create account"}</div>
+            <div style={{fontSize:14,color:"#64748B"}}>{mode==="login"?"Sign in to your TradeLog account":"Join TradeLog and start tracking"}</div>
+          </div>
+
+          {error&&<div style={{background:"#FEF2F2",border:"1px solid #FECACA",borderRadius:10,padding:"12px 16px",fontSize:13,color:"#DC2626",marginBottom:16,fontWeight:500}}>{error}</div>}
+          {success&&<div style={{background:"#ECFDF5",border:"1px solid #A7F3D0",borderRadius:10,padding:"12px 16px",fontSize:13,color:"#059669",marginBottom:16,fontWeight:500}}>{success}</div>}
+
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            {mode==="signup"&&<>
+              <div><label style={{fontSize:12,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:0.6,display:"block",marginBottom:6}}>Full Name</label><input type="text" placeholder="e.g. Towfiq Ahmed" value={fullName} onChange={e=>setFullName(e.target.value)}/></div>
+              <div><label style={{fontSize:12,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:0.6,display:"block",marginBottom:6}}>Birthday</label><input type="date" value={birthday} onChange={e=>setBirthday(e.target.value)}/></div>
+            </>}
+            <div><label style={{fontSize:12,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:0.6,display:"block",marginBottom:6}}>Email</label><input type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
+            <div><label style={{fontSize:12,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:0.6,display:"block",marginBottom:6}}>Password</label><input type="password" placeholder="Min. 6 characters" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
+            <button onClick={handle} disabled={loading} style={{background:loading?"#93C5FD":"linear-gradient(135deg,#2563EB,#1D4ED8)",color:"#fff",border:"none",borderRadius:12,padding:"14px",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:15,cursor:loading?"not-allowed":"pointer",marginTop:4,boxShadow:"0 4px 16px rgba(37,99,235,0.3)",transition:"all 0.2s"}}>
+              {loading?"Please wait…":mode==="login"?"Sign In →":"Create Account →"}
+            </button>
+          </div>
+          <div style={{textAlign:"center",marginTop:24,fontSize:13,color:"#94A3B8"}}>
+            {mode==="login"?"Don't have an account? ":"Already have an account? "}
+            <span onClick={()=>sw(mode==="login"?"signup":"login")} style={{color:"#2563EB",fontWeight:700,cursor:"pointer",textDecoration:"underline"}}>{mode==="login"?"Sign Up":"Sign In"}</span>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
 
-// ── CALCULATOR PAGE ───────────────────────────────────────────
+// ── CALCULATOR ────────────────────────────────────────────────
 function CalcPage(){
   const [dir,setDir]=useState("long");
-  const [entry,setEntry]=useState("");
-  const [margin,setMargin]=useState("");
+  const [entry,setEntry]=useState(65000);
+  const [margin,setMargin]=useState(100);
   const [leverage,setLeverage]=useState(20);
-  const [tpPct,setTpPct]=useState("");
-  const [slPct,setSlPct]=useState("");
+  const [tpPct,setTpPct]=useState(150);
+  const [slPct,setSlPct]=useState(50);
   const [bdtRate,setBdtRate]=useState(110);
   const [mm,setMm]=useState(0.5);
 
-  const calc=useMemo(()=>{
+  const c=useMemo(()=>{
     const e=parseFloat(entry),m=parseFloat(margin),lev=parseFloat(leverage),tp=parseFloat(tpPct),sl=parseFloat(slPct),bdt=parseFloat(bdtRate),mmR=parseFloat(mm);
     if(!e||!m||!lev)return null;
     const posSize=m*lev,qty=posSize/e,fee=posSize*0.001;
-    let tpPrice=null,tpGross=null,tpNet=null,tpRetPct=null;
-    if(tp){const pm=tp/lev;tpPrice=dir==="long"?e*(1+pm/100):e*(1-pm/100);tpGross=m*(tp/100);tpNet=tpGross-fee;tpRetPct=(tpNet/m)*100;}
-    let slPrice=null,slGross=null,slNet=null,slRetPct=null;
-    if(sl){const pm=sl/lev;slPrice=dir==="long"?e*(1-pm/100):e*(1+pm/100);slGross=-(m*(sl/100));slNet=slGross-fee;slRetPct=(slNet/m)*100;}
+    const tpPm=tp/lev,slPm=sl/lev;
+    const tpPrice=dir==="long"?e*(1+tpPm/100):e*(1-tpPm/100);
+    const slPrice=dir==="long"?e*(1-slPm/100):e*(1+slPm/100);
+    const tpGross=m*(tp/100),tpNet=tpGross-fee,tpRet=(tpNet/m)*100;
+    const slGross=-(m*(sl/100)),slNet=slGross-fee,slRet=(slNet/m)*100;
     const liqPrice=dir==="long"?e*(1-1/lev+mmR/100):e*(1+1/lev-mmR/100);
-    const rr=(tp&&sl)?`1 : ${(tp/sl).toFixed(2)}`:"—";
-    return{posSize,qty,liqPrice,tpPrice,tpGross,tpNet,tpRetPct,slPrice,slGross,slNet,slRetPct,rr,bdt,fee};
+    return{posSize,qty,liqPrice,tpPrice,tpGross,tpNet,tpRet,slPrice,slGross,slNet,slRet,rr:`1 : ${(tp/sl).toFixed(2)}`,bdt,fee};
   },[dir,entry,margin,leverage,tpPct,slPct,bdtRate,mm]);
 
-  const applyRatio=()=>{const s=parseFloat(slPct);if(s>0){setTpPct((s*3).toFixed(2));return;}const t=parseFloat(tpPct);if(t>0)setSlPct((t/3).toFixed(2));};
+  const applyRatio=()=>{const s=parseFloat(slPct);if(s>0){setTpPct((s*3).toFixed(1));return;}const t=parseFloat(tpPct);if(t>0)setSlPct((t/3).toFixed(1));};
+  const fP=n=>n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:4});
   const fN=(n,d=2)=>n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:d});
-  const fP=n=>n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:6});
+
+  const SliderField=({label,value,onChange,min,max,step=1,format=v=>v,color="#2563EB"})=>(
+    <div style={{marginBottom:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+        <label style={{fontSize:13,fontWeight:600,color:"#475569"}}>{label}</label>
+        <span style={{fontSize:14,fontWeight:700,color,background:"#EFF6FF",padding:"2px 10px",borderRadius:6}}>{format(value)}</span>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(parseFloat(e.target.value))} style={{background:`linear-gradient(to right,${color} ${((value-min)/(max-min))*100}%,#E2E8F0 0%)`}}/>
+      <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#94A3B8",marginTop:4}}>
+        <span>{format(min)}</span><span>{format(max)}</span>
+      </div>
+    </div>
+  );
 
   return(
-    <div style={{background:"#0b0e11",minHeight:"100vh",padding:"24px",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
-      <div style={{maxWidth:1000,margin:"0 auto"}}>
-        <h2 style={{textAlign:"center",color:"#f0b90b",fontFamily:"'Instrument Serif',serif",fontSize:26,marginBottom:6}}>⚡ Binance Futures PnL Calculator</h2>
-        <p style={{textAlign:"center",color:"#848e9c",marginBottom:24,fontSize:13}}>Input PnL % on Margin → Get Platform Price, Gross & Net PnL, BDT</p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
-          <div className="calc-card">
-            <div style={{fontWeight:700,color:"#eaecef",marginBottom:16,fontSize:15}}>📊 Trade Setup</div>
-            <div style={{display:"flex",gap:10,marginBottom:16}}>
-              <button className={`dir-btn ${dir==="long"?"long-active":""}`} onClick={()=>setDir("long")}>LONG</button>
-              <button className={`dir-btn ${dir==="short"?"short-active":""}`} onClick={()=>setDir("short")}>SHORT</button>
-            </div>
-            {[["Entry Price (USDT)",entry,setEntry,"e.g. 65000"],["Initial Margin (USDT)",margin,setMargin,"e.g. 100"]].map(([l,v,s,p])=>(
-              <div key={l} style={{marginBottom:14}}>
-                <label style={{display:"block",marginBottom:6,fontSize:13,color:"#848e9c",fontWeight:600}}>{l}</label>
-                <input type="number" className="calc-input" placeholder={p} value={v} onChange={e=>s(e.target.value)}/>
-              </div>
-            ))}
-            <div style={{marginBottom:14}}>
-              <label style={{display:"block",marginBottom:6,fontSize:13,color:"#848e9c",fontWeight:600}}>Leverage</label>
-              <div style={{textAlign:"center",fontSize:20,fontWeight:700,color:"#f0b90b",marginBottom:6}}>{leverage}x</div>
-              <input type="range" min="1" max="125" value={leverage} onChange={e=>setLeverage(e.target.value)}/>
-            </div>
-            <div style={{background:"rgba(240,185,11,0.1)",border:"1px solid #f0b90b",borderRadius:8,padding:"11px 14px",marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontSize:13,color:"#f0b90b"}}>⚠️ Recommended R:R = 1:3</span>
-              <button onClick={applyRatio} style={{background:"#f0b90b",color:"#000",border:"none",padding:"6px 14px",borderRadius:6,cursor:"pointer",fontWeight:700,fontSize:12,fontFamily:"inherit"}}>Auto Fix</button>
-            </div>
-            {[["Target PnL % (Return on Margin)",tpPct,setTpPct,"e.g. 150"],["Max Loss % (Risk on Margin)",slPct,setSlPct,"e.g. 50"],["USDT to BDT Rate",bdtRate,setBdtRate,"e.g. 110"],["Maintenance Margin (%)",mm,setMm,"0.5"]].map(([l,v,s,p])=>(
-              <div key={l} style={{marginBottom:14}}>
-                <label style={{display:"block",marginBottom:6,fontSize:13,color:"#848e9c",fontWeight:600}}>{l}</label>
-                <input type="number" className="calc-input" placeholder={p} value={v} onChange={e=>s(e.target.value)}/>
-              </div>
+    <div style={{maxWidth:1100,margin:"0 auto",padding:"28px 24px"}}>
+      <div style={{marginBottom:28}}>
+        <div style={{fontFamily:"'Sora',sans-serif",fontSize:26,fontWeight:700,color:"#0F172A"}}>⚡ Futures PnL Calculator</div>
+        <div style={{fontSize:13,color:"#94A3B8",marginTop:4}}>Calculate your Binance Futures take profit, stop loss & liquidation prices</div>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24}}>
+        {/* Input Card */}
+        <Card style={{padding:"28px"}}>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:"#0F172A",marginBottom:24}}>Trade Setup</div>
+
+          {/* Direction */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
+            {["long","short"].map(d=>(
+              <button key={d} onClick={()=>setDir(d)} style={{padding:"12px",borderRadius:10,border:`2px solid ${dir===d?(d==="long"?"#10B981":"#EF4444"):"#E2E8F0"}`,background:dir===d?(d==="long"?"#ECFDF5":"#FEF2F2"):"#fff",color:dir===d?(d==="long"?"#059669":"#DC2626"):"#94A3B8",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,cursor:"pointer",transition:"all 0.2s"}}>
+                {d==="long"?"▲ LONG":"▼ SHORT"}
+              </button>
             ))}
           </div>
-          <div className="calc-card">
-            <div style={{fontWeight:700,color:"#eaecef",marginBottom:16,fontSize:15}}>📈 Position Details</div>
-            {[["Direction",<span style={{color:dir==="long"?"#0ecb81":"#f6465d",fontWeight:700}}>{dir.toUpperCase()}</span>],["Position Size",calc?`${fN(calc.posSize)} USDT`:"—"],["Quantity (Coins)",calc?fN(calc.qty,6):"—"],["Risk/Reward Ratio",calc?calc.rr:"—"]].map(([l,v])=>(
-              <div key={l} className="res-row"><span style={{color:"#848e9c",fontSize:14}}>{l}</span><span style={{fontWeight:700,fontSize:14,color:"#eaecef"}}>{v}</span></div>
-            ))}
-            <div className="liq-banner">
-              <span style={{fontSize:13,color:"#f6465d",fontWeight:700}}>💧 Liquidation Price</span>
-              <span style={{fontSize:18,fontWeight:700,color:"#f6465d",fontFamily:"monospace"}}>{calc?fP(calc.liqPrice):"—"}</span>
-            </div>
-            <div className="scen-tp">
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,paddingBottom:8,borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
-                <span style={{color:"#0ecb81",fontWeight:700,fontSize:13}}>🎯 Take Profit</span>
-                <span style={{color:"#f0b90b",fontWeight:700,fontSize:13}}>{tpPct?`${(tpPct/leverage).toFixed(3)}% move`:"—"}</span>
-              </div>
-              <div className="plat-price">
-                <div style={{fontSize:11,color:"#f0b90b",textTransform:"uppercase",letterSpacing:0.5}}>Platform Price (Set on Binance)</div>
-                <div style={{fontSize:20,fontWeight:700,color:"#f0b90b",fontFamily:"monospace"}}>{calc&&calc.tpPrice?fP(calc.tpPrice):"—"}</div>
-              </div>
-              {[["Gross PnL",calc&&calc.tpGross!=null?`+${fN(calc.tpGross)} USDT`:"—","#0ecb81"],["Net PnL (after fees)",calc&&calc.tpNet!=null?`+${fN(calc.tpNet)} USDT`:"—","#0ecb81"],["Return on Margin",calc&&calc.tpRetPct!=null?`+${fN(calc.tpRetPct)}%`:"—","#0ecb81"]].map(([l,v,c])=>(
-                <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:13}}>
-                  <span style={{color:"#848e9c"}}>{l}</span><span style={{fontWeight:700,color:c,fontFamily:"monospace"}}>{v}</span>
-                </div>
-              ))}
-              {calc?.tpNet&&<div style={{fontSize:11,color:"#848e9c",textAlign:"right",marginTop:4}}>{fN(calc.tpNet*bdtRate)} BDT</div>}
-            </div>
-            <div className="scen-sl">
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,paddingBottom:8,borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
-                <span style={{color:"#f6465d",fontWeight:700,fontSize:13}}>🛑 Stop Loss</span>
-                <span style={{color:"#f0b90b",fontWeight:700,fontSize:13}}>{slPct?`${(slPct/leverage).toFixed(3)}% move`:"—"}</span>
-              </div>
-              <div className="plat-price">
-                <div style={{fontSize:11,color:"#f0b90b",textTransform:"uppercase",letterSpacing:0.5}}>Platform Price (Set on Binance)</div>
-                <div style={{fontSize:20,fontWeight:700,color:"#f0b90b",fontFamily:"monospace"}}>{calc&&calc.slPrice?fP(calc.slPrice):"—"}</div>
-              </div>
-              {[["Gross PnL",calc&&calc.slGross!=null?`${fN(calc.slGross)} USDT`:"—","#f6465d"],["Net PnL (after fees)",calc&&calc.slNet!=null?`${fN(calc.slNet)} USDT`:"—","#f6465d"],["Return on Margin",calc&&calc.slRetPct!=null?`${fN(calc.slRetPct)}%`:"—","#f6465d"]].map(([l,v,c])=>(
-                <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:13}}>
-                  <span style={{color:"#848e9c"}}>{l}</span><span style={{fontWeight:700,color:c,fontFamily:"monospace"}}>{v}</span>
-                </div>
-              ))}
-              {calc?.slNet&&<div style={{fontSize:11,color:"#848e9c",textAlign:"right",marginTop:4}}>{fN(calc.slNet*bdtRate)} BDT</div>}
-            </div>
-            <div style={{fontSize:11,color:"#848e9c",textAlign:"center",marginTop:10,fontStyle:"italic"}}>*Fees estimated at 0.1% round-trip on Position Size</div>
+
+          <SliderField label="Entry Price (USDT)" value={entry} onChange={setEntry} min={100} max={200000} step={100} format={v=>`$${v.toLocaleString()}`}/>
+          <SliderField label="Initial Margin (USDT)" value={margin} onChange={setMargin} min={10} max={10000} step={10} format={v=>`$${v}`}/>
+          <SliderField label="Leverage" value={leverage} onChange={setLeverage} min={1} max={125} format={v=>`${v}x`} color="#7C3AED"/>
+          <SliderField label="Target PnL % (on Margin)" value={tpPct} onChange={setTpPct} min={1} max={500} format={v=>`${v}%`} color="#10B981"/>
+          <SliderField label="Max Loss % (on Margin)" value={slPct} onChange={setSlPct} min={1} max={100} format={v=>`${v}%`} color="#EF4444"/>
+
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+            <div><label style={{fontSize:12,fontWeight:600,color:"#475569",display:"block",marginBottom:6}}>BDT Rate</label><input type="number" value={bdtRate} onChange={e=>setBdtRate(e.target.value)}/></div>
+            <div><label style={{fontSize:12,fontWeight:600,color:"#475569",display:"block",marginBottom:6}}>Maint. Margin %</label><input type="number" value={mm} onChange={e=>setMm(e.target.value)}/></div>
           </div>
-        </div>
-        <div style={{background:"#1e2329",border:"1px solid #2b3139",borderRadius:12,padding:"14px 18px",marginTop:20,fontSize:12,color:"#848e9c",lineHeight:1.7}}>
-          <strong style={{color:"#eaecef"}}>How the math works:</strong> PnL % on Margin → Price Move % = PnL % ÷ Leverage → Platform Price = Entry × (1 ± Price Move %) → Gross PnL = Margin × (PnL% / 100) → Net PnL = Gross − Fees.<br/>
-          <em>Disclaimer: Educational estimate. Actual Binance fees, funding, and margin tiers may vary.</em>
+
+          <div style={{background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:10,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:13,color:"#92400E",fontWeight:500}}>⚠️ Recommended R:R = 1:3</span>
+            <button onClick={applyRatio} style={{background:"#F59E0B",color:"#fff",border:"none",padding:"6px 14px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:12,fontFamily:"'DM Sans',sans-serif"}}>Auto Fix</button>
+          </div>
+        </Card>
+
+        {/* Results Card */}
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          {/* Position Summary */}
+          <Card style={{padding:"24px"}}>
+            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:"#0F172A",marginBottom:18}}>Position Summary</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+              {[["Direction",<Badge type={dir==="long"?"long":"short"}>{dir==="long"?"▲ LONG":"▼ SHORT"}</Badge>],
+                ["Position Size",c?`$${fN(c.posSize)} USDT`:"—"],
+                ["Quantity",c?`${fN(c.qty,6)} coins`:"—"],
+                ["Risk / Reward",c?c.rr:"—"],
+              ].map(([l,v])=>(
+                <div key={l} style={{background:"#F8FAFC",borderRadius:10,padding:"12px 14px"}}>
+                  <div style={{fontSize:11,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:4}}>{l}</div>
+                  <div style={{fontWeight:700,fontSize:14,color:"#0F172A"}}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:"#FEF2F2",border:"1px solid #FECACA",borderRadius:10,padding:"12px 16px",marginTop:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:13,color:"#DC2626",fontWeight:600}}>💧 Liquidation Price</span>
+              <span style={{fontFamily:"'Sora',sans-serif",fontSize:18,fontWeight:700,color:"#DC2626"}}>${fP(c?.liqPrice)}</span>
+            </div>
+          </Card>
+
+          {/* TP Card */}
+          <Card style={{padding:"22px",borderLeft:"4px solid #10B981"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:"#059669"}}>🎯 Take Profit</div>
+              <Badge type="pos">{c?`${(tpPct/leverage).toFixed(3)}% price move`:""}</Badge>
+            </div>
+            <div style={{background:"linear-gradient(135deg,#ECFDF5,#D1FAE5)",borderRadius:10,padding:"14px",marginBottom:12,textAlign:"center"}}>
+              <div style={{fontSize:11,color:"#059669",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>Set This Price on Binance</div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontSize:24,fontWeight:700,color:"#059669",marginTop:4}}>${fP(c?.tpPrice)}</div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+              {[["Gross PnL",c?.tpGross!=null?`+${fmt(c.tpGross)}`:"—","#059669"],["Net PnL",c?.tpNet!=null?`+${fmt(c.tpNet)}`:"—","#059669"],["Return",c?.tpRet!=null?`+${fN(c.tpRet)}%`:"—","#059669"]].map(([l,v,col])=>(
+                <div key={l} style={{textAlign:"center"}}>
+                  <div style={{fontSize:10,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",marginBottom:3}}>{l}</div>
+                  <div style={{fontWeight:700,fontSize:13,color:col}}>{v}</div>
+                </div>
+              ))}
+            </div>
+            {c?.tpNet&&<div style={{fontSize:11,color:"#94A3B8",textAlign:"center",marginTop:8}}>≈ {fN(c.tpNet*bdtRate)} BDT</div>}
+          </Card>
+
+          {/* SL Card */}
+          <Card style={{padding:"22px",borderLeft:"4px solid #EF4444"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:"#DC2626"}}>🛑 Stop Loss</div>
+              <Badge type="neg">{c?`${(slPct/leverage).toFixed(3)}% price move`:""}</Badge>
+            </div>
+            <div style={{background:"linear-gradient(135deg,#FEF2F2,#FEE2E2)",borderRadius:10,padding:"14px",marginBottom:12,textAlign:"center"}}>
+              <div style={{fontSize:11,color:"#DC2626",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>Set This Price on Binance</div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontSize:24,fontWeight:700,color:"#DC2626",marginTop:4}}>${fP(c?.slPrice)}</div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+              {[["Gross PnL",c?.slGross!=null?fmt(c.slGross):"—","#DC2626"],["Net PnL",c?.slNet!=null?fmt(c.slNet):"—","#DC2626"],["Return",c?.slRet!=null?`${fN(c.slRet)}%`:"—","#DC2626"]].map(([l,v,col])=>(
+                <div key={l} style={{textAlign:"center"}}>
+                  <div style={{fontSize:10,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",marginBottom:3}}>{l}</div>
+                  <div style={{fontWeight:700,fontSize:13,color:col}}>{v}</div>
+                </div>
+              ))}
+            </div>
+            {c?.slNet&&<div style={{fontSize:11,color:"#94A3B8",textAlign:"center",marginTop:8}}>≈ {fN(c.slNet*bdtRate)} BDT</div>}
+          </Card>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── PROFILE ───────────────────────────────────────────────────
+function ProfilePage({profile,trades,onLogout}){
+  const days=useMemo(()=>{const map={};trades.forEach(t=>{if(!map[t.date])map[t.date]={trades:[],total:0};map[t.date].trades.push(t);map[t.date].total+=parseFloat(t.result);});return Object.values(map);},[trades]);
+  const totalPNL=days.reduce((s,d)=>s+d.total,0);
+  const winDays=days.filter(d=>d.total>0).length,lossDays=days.filter(d=>d.total<0).length;
+  const winTrades=trades.filter(t=>parseFloat(t.result)>0).length,lossTrades=trades.filter(t=>parseFloat(t.result)<0).length;
+  const best=days.length?Math.max(...days.map(d=>d.total)):0,worst=days.length?Math.min(...days.map(d=>d.total)):0;
+  const avg=days.length?totalPNL/days.length:0;
+  const coinMap={};trades.forEach(t=>{const c=t.ticker||"OTHER";if(!coinMap[c])coinMap[c]={count:0,pnl:0};coinMap[c].count++;coinMap[c].pnl+=parseFloat(t.result);});
+  const coinList=Object.entries(coinMap).sort((a,b)=>b[1].count-a[1].count).slice(0,8);
+  const initials=profile?.full_name?profile.full_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"?";
+  const bdayStr=profile?.birthday?new Date(profile.birthday+"T00:00:00").toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}):"—";
+
+  return(
+    <div style={{maxWidth:960,margin:"0 auto",padding:"28px 24px",display:"flex",flexDirection:"column",gap:24}} className="fade-up">
+      {/* Hero profile card */}
+      <Card style={{padding:0,overflow:"hidden"}}>
+        <div style={{background:"linear-gradient(135deg,#1D4ED8,#2563EB,#3B82F6)",padding:"36px 36px 80px",position:"relative"}}>
+          <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:"rgba(255,255,255,0.06)"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:20}}>
+            <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(255,255,255,0.2)",border:"3px solid rgba(255,255,255,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:26,color:"#fff"}}>{initials}</div>
+            <div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontSize:24,fontWeight:700,color:"#fff"}}>{profile?.full_name||"Trader"}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.7)",marginTop:4}}>🎂 {bdayStr}</div>
+            </div>
+            <button onClick={onLogout} style={{marginLeft:"auto",background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.25)",color:"#fff",borderRadius:10,padding:"9px 20px",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600}}>Sign Out</button>
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:0,marginTop:-48,padding:"0 28px 28px"}}>
+          {[["Total Trades",trades.length,"📊"],["Total PNL",fmt(totalPNL),"💰",totalPNL>=0?"#059669":"#DC2626"],["Win Rate (Days)",`${days.length?(winDays/days.length*100).toFixed(1):0}%`,"🎯"],["Avg Daily PnL",fmt(avg),"📈",avg>=0?"#059669":"#DC2626"]].map(([l,v,icon,col])=>(
+            <div key={l} style={{background:"#fff",borderRadius:14,padding:"18px 16px",margin:"0 6px",boxShadow:"0 8px 24px rgba(0,0,0,0.1)",textAlign:"center"}}>
+              <div style={{fontSize:22,marginBottom:8}}>{icon}</div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontSize:20,fontWeight:700,color:col||"#0F172A"}}>{v}</div>
+              <div style={{fontSize:11,color:"#94A3B8",fontWeight:500,marginTop:3,textTransform:"uppercase",letterSpacing:0.5}}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+        {/* Win rate donut */}
+        <Card style={{padding:"24px"}}>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:"#0F172A",marginBottom:20}}>Trade Win Rate</div>
+          <div style={{display:"flex",alignItems:"center",gap:28}}>
+            <Donut win={winTrades} loss={lossTrades} size={130}/>
+            <div style={{flex:1,display:"flex",flexDirection:"column",gap:12}}>
+              {[["Winning Trades",winTrades,"#10B981","#ECFDF5"],["Losing Trades",lossTrades,"#EF4444","#FEF2F2"],["Break Even",trades.length-winTrades-lossTrades,"#94A3B8","#F1F5F9"]].map(([l,v,c,bg])=>(
+                <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:bg,borderRadius:8,padding:"8px 12px"}}>
+                  <span style={{fontSize:13,color:c,fontWeight:600}}>{l}</span>
+                  <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:c}}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        {/* Best/Worst */}
+        <Card style={{padding:"24px"}}>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:"#0F172A",marginBottom:20}}>Day Performance</div>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {[["🏆 Best Day",best,"#059669","#ECFDF5","+"],["📉 Worst Day",worst,"#DC2626","#FEF2F2",""],["⚡ Win Days",winDays,"#2563EB","#EFF6FF",""],["❌ Loss Days",lossDays,"#DC2626","#FEF2F2",""]].map(([l,v,c,bg,prefix])=>(
+              <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:bg,borderRadius:10,padding:"12px 16px"}}>
+                <span style={{fontSize:13,fontWeight:600,color:"#475569"}}>{l}</span>
+                <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:c,fontSize:15}}>{typeof v==="number"&&l.includes("Day")?`${prefix}${fmt(v)}`:v}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Coin table */}
+      {coinList.length>0&&(
+        <Card style={{overflow:"hidden"}}>
+          <div style={{padding:"20px 24px",borderBottom:"1px solid #F1F5F9",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:"#0F172A"}}>🪙 Coin Performance</div>
+          <div style={{padding:"8px 0"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 80px 120px 120px 100px",gap:12,padding:"10px 24px",fontSize:11,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>
+              <div>Coin</div><div style={{textAlign:"center"}}>Trades</div><div style={{textAlign:"right"}}>Total PnL</div><div style={{textAlign:"right"}}>Avg / Trade</div><div style={{textAlign:"right"}}>Win Rate</div>
+            </div>
+            {coinList.map(([coin,data],i)=>{
+              const coinTrades=trades.filter(t=>t.ticker===coin);
+              const coinWins=coinTrades.filter(t=>parseFloat(t.result)>0).length;
+              const wr=coinTrades.length?(coinWins/coinTrades.length*100).toFixed(0):0;
+              return(
+                <div key={coin} style={{display:"grid",gridTemplateColumns:"1fr 80px 120px 120px 100px",gap:12,padding:"14px 24px",borderTop:"1px solid #F8FAFC",alignItems:"center",transition:"background 0.1s"}} onMouseEnter={e=>e.currentTarget.style.background="#F8FAFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#EFF6FF,#DBEAFE)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:11,color:"#2563EB"}}>{coin.slice(0,3)}</div>
+                    <span style={{fontWeight:700,fontSize:14,color:"#0F172A"}}>{coin}</span>
+                  </div>
+                  <div style={{textAlign:"center"}}><Badge type="zero">{data.count}</Badge></div>
+                  <div style={{textAlign:"right",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:data.pnl>=0?"#059669":"#DC2626"}}>{data.pnl>=0?"+":""}{fmt(data.pnl)}</div>
+                  <div style={{textAlign:"right",fontSize:13,color:"#64748B",fontWeight:500}}>{fmt(data.pnl/data.count)}</div>
+                  <div style={{textAlign:"right"}}><Badge type={wr>=50?"pos":"neg"}>{wr}%</Badge></div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
@@ -429,7 +473,7 @@ function Dashboard({token}){
   const [startCap,setStartCap]=useState(10000);
   const [capEdit,setCapEdit]=useState(false);
   const [capInput,setCapInput]=useState("");
-  const [loadingData,setLoadingData]=useState(false);
+  const [loading,setLoading]=useState(false);
   const [date,setDate]=useState(todayStr());
   const [ticker,setTicker]=useState("");
   const [direction,setDirection]=useState("long");
@@ -438,30 +482,16 @@ function Dashboard({token}){
   const [saving,setSaving]=useState(false);
   const [expandedDay,setExpandedDay]=useState(null);
   const [activeTab,setActiveTab]=useState("log");
-
   const usedCoins=useMemo(()=>[...new Set(trades.map(t=>t.ticker).filter(Boolean))],[trades]);
 
-  const getToken=useCallback(async()=>{
-    const stored=localStorage.getItem("tl_token");
-    if(!stored)return null;
-    // Try to use stored, if expired refresh
-    return stored;
-  },[]);
-
   const fetchData=useCallback(async()=>{
-    setLoadingData(true);
+    setLoading(true);
     try{
-      const tok=localStorage.getItem("tl_token");
-      const [td,sd]=await Promise.all([
-        dbFetch("/rest/v1/trades?select=*&order=date.desc,created_at.desc","GET",null,tok),
-        dbFetch("/rest/v1/user_settings?select=*","GET",null,tok),
-      ]);
-      setTrades(td||[]);
-      if(sd?.length>0)setStartCap(parseFloat(sd[0].starting_capital));
-    }catch(e){console.error(e);}
-    finally{setLoadingData(false);}
+      const tok=getToken();
+      const [td,sd]=await Promise.all([dbFetch("/rest/v1/trades?select=*&order=date.desc,created_at.desc","GET",null,tok),dbFetch("/rest/v1/user_settings?select=*","GET",null,tok)]);
+      setTrades(td||[]);if(sd?.length>0)setStartCap(parseFloat(sd[0].starting_capital));
+    }catch(e){console.error(e);}finally{setLoading(false);}
   },[]);
-
   useEffect(()=>{fetchData();},[fetchData]);
 
   const addTrade=async()=>{
@@ -470,201 +500,172 @@ function Dashboard({token}){
     if(!ticker.trim()){setFormError("Enter a ticker.");return;}
     setFormError("");setSaving(true);
     try{
-      const tok=localStorage.getItem("tl_token");
-      const uid=JSON.parse(atob(tok.split(".")[1])).sub;
+      const tok=getToken(),uid=getUID();
       const row=await dbFetch("/rest/v1/trades","POST",{user_id:uid,date,ticker:ticker.trim().toUpperCase(),result:r,note:direction},tok,{"Prefer":"return=representation"});
-      setTrades(prev=>[row[0],...prev]);
-      setTicker("");setResult("");
-    }catch(e){setFormError(e.message);}
-    finally{setSaving(false);}
+      setTrades(prev=>[row[0],...prev]);setTicker("");setResult("");
+    }catch(e){setFormError(e.message);}finally{setSaving(false);}
   };
 
   const deleteTrade=async(id)=>{
-    try{
-      const tok=localStorage.getItem("tl_token");
-      await dbFetch(`/rest/v1/trades?id=eq.${id}`,"DELETE",null,tok);
-      setTrades(prev=>prev.filter(t=>t.id!==id));
-    }catch(e){alert("Delete failed: "+e.message);}
+    try{await dbFetch(`/rest/v1/trades?id=eq.${id}`,"DELETE",null,getToken());setTrades(prev=>prev.filter(t=>t.id!==id));}
+    catch(e){alert("Delete failed: "+e.message);}
   };
 
   const saveCapital=async()=>{
-    const v=parseFloat(capInput);
-    if(isNaN(v)||v<=0)return;
-    try{
-      const tok=localStorage.getItem("tl_token");
-      const uid=JSON.parse(atob(tok.split(".")[1])).sub;
-      await upsert("user_settings",{user_id:uid,starting_capital:v},tok);
-      setStartCap(v);setCapEdit(false);
-    }catch(e){alert("Could not save: "+e.message);}
+    const v=parseFloat(capInput);if(isNaN(v)||v<=0)return;
+    try{const uid=getUID();await upsert("user_settings",{user_id:uid,starting_capital:v},getToken());setStartCap(v);setCapEdit(false);}
+    catch(e){alert("Could not save: "+e.message);}
   };
 
-  // CSV Download
   const downloadCSV=()=>{
     const rows=[["Date","Ticker","Direction","Result ($)"]];
-    [...trades].sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
-      rows.push([t.date,t.ticker||"",t.note||"",t.result]);
-    });
+    [...trades].sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>rows.push([t.date,t.ticker||"",t.note||"",t.result]));
     const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
     const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=url;a.download=`tradelog_${todayStr()}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+    const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`tradelog_${todayStr()}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
   };
 
-  const days=useMemo(()=>{
-    const map={};
-    trades.forEach(t=>{if(!map[t.date])map[t.date]={date:t.date,trades:[],total:0};map[t.date].trades.push(t);map[t.date].total+=parseFloat(t.result);});
-    return Object.values(map).sort((a,b)=>b.date.localeCompare(a.date));
-  },[trades]);
-
+  const days=useMemo(()=>{const map={};trades.forEach(t=>{if(!map[t.date])map[t.date]={date:t.date,trades:[],total:0};map[t.date].trades.push(t);map[t.date].total+=parseFloat(t.result);});return Object.values(map).sort((a,b)=>b.date.localeCompare(a.date));},[trades]);
   const totalPNL=days.reduce((s,d)=>s+d.total,0);
-  const currentCap=startCap+totalPNL;
-  const capPct=((currentCap-startCap)/startCap*100);
-  const winDays=days.filter(d=>d.total>0).length;
-  const lossDays=days.filter(d=>d.total<0).length;
+  const currentCap=startCap+totalPNL,capPct=((currentCap-startCap)/startCap*100);
+  const winDays=days.filter(d=>d.total>0).length,lossDays=days.filter(d=>d.total<0).length;
   const winRate=days.length?(winDays/days.length*100).toFixed(1):"0.0";
-  const best=days.length?Math.max(...days.map(d=>d.total)):0;
-  const worst=days.length?Math.min(...days.map(d=>d.total)):0;
+  const best=days.length?Math.max(...days.map(d=>d.total)):0,worst=days.length?Math.min(...days.map(d=>d.total)):0;
 
-  // Monthly chart data
-  const monthlyData=useMemo(()=>{
-    const map={};
-    trades.forEach(t=>{
-      const m=t.date.slice(0,7); // YYYY-MM
-      if(!map[m])map[m]={month:m,total:0};
-      map[m].total+=parseFloat(t.result);
-    });
-    return Object.values(map).sort((a,b)=>a.month.localeCompare(b.month)).slice(-12);
-  },[trades]);
-
+  const monthlyData=useMemo(()=>{const map={};trades.forEach(t=>{const m=t.date.slice(0,7);if(!map[m])map[m]={month:m,total:0,wins:0,count:0};map[m].total+=parseFloat(t.result);if(parseFloat(t.result)>0)map[m].wins++;map[m].count++;});return Object.values(map).sort((a,b)=>a.month.localeCompare(b.month)).slice(-12);},[trades]);
   const maxAbsMonth=Math.max(...monthlyData.map(d=>Math.abs(d.total)),1);
 
-  const fmtMonth=m=>{const[y,mo]=m.split("-");return new Date(y,mo-1).toLocaleDateString("en-US",{month:"short",year:"2-digit"});};
-
   return(
-    <div style={{maxWidth:1020,margin:"0 auto",padding:"24px",display:"flex",flexDirection:"column",gap:20}}>
-      {/* CSV Button */}
-      <div style={{display:"flex",justifyContent:"flex-end"}}>
-        <button onClick={downloadCSV} style={{background:"#fff",color:"#2145e6",border:"1.5px solid #2145e6",borderRadius:10,padding:"9px 20px",fontFamily:"inherit",fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>⬇ Download CSV</button>
+    <div style={{maxWidth:1060,margin:"0 auto",padding:"24px",display:"flex",flexDirection:"column",gap:20}}>
+
+      {/* Stats row */}
+      <div style={{display:"grid",gridTemplateColumns:"1.4fr 1fr 1fr 1fr",gap:16}} className="fade-up">
+        {/* Capital card */}
+        <Card style={{padding:"24px",background:"linear-gradient(135deg,#1D4ED8,#2563EB)",color:"#fff"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+            <div>
+              <div style={{fontSize:11,fontWeight:600,textTransform:"uppercase",letterSpacing:0.8,opacity:0.7,marginBottom:6}}>Current Capital</div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontSize:30,fontWeight:700,letterSpacing:"-1px"}}>{fmt(currentCap)}</div>
+            </div>
+            <div style={{width:44,height:44,borderRadius:12,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>💰</div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+            <span style={{background:capPct>=0?"rgba(16,185,129,0.2)":"rgba(239,68,68,0.2)",color:capPct>=0?"#6EE7B7":"#FCA5A5",borderRadius:6,padding:"3px 10px",fontSize:12,fontWeight:700}}>{capPct>=0?"▲":"▼"} {Math.abs(capPct).toFixed(2)}%</span>
+            <span style={{fontSize:11,opacity:0.6}}>from starting capital</span>
+          </div>
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.15)",paddingTop:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:10,opacity:0.5,textTransform:"uppercase",letterSpacing:0.5}}>Starting</div><div style={{fontWeight:700,fontSize:15,marginTop:2}}>{fmt(startCap)}</div></div>
+            <div style={{display:"flex",gap:6}}>
+              {!capEdit?<button onClick={()=>{setCapEdit(true);setCapInput(startCap.toString());}} style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:11,fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>Edit</button>:
+              <><input type="number" value={capInput} onChange={e=>setCapInput(e.target.value)} style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.25)",color:"#fff",width:100,borderRadius:8,padding:"6px 10px",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13}}/><button onClick={saveCapital} style={{background:"#fff",color:"#1D4ED8",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12}}>Save</button><button onClick={()=>setCapEdit(false)} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#fff",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontFamily:"'DM Sans',sans-serif"}}>✕</button></>}
+            </div>
+          </div>
+        </Card>
+
+        <StatCard icon="📈" label="Total PNL" value={`${totalPNL>=0?"+":""}${fmt(totalPNL)}`} sub={`${trades.length} trades · ${days.length} days`} color={totalPNL>=0?"#059669":"#DC2626"}/>
+        <StatCard icon="🎯" label="Day Win Rate" value={`${winRate}%`} sub={`▲ ${winDays} wins  ▼ ${lossDays} losses`} color="#2563EB"/>
+        <StatCard icon="⚡" label="Best Day" value={fmt(best)} sub={`Worst: ${fmt(worst)}`} color="#059669"/>
       </div>
 
-      {loadingData&&<div style={{textAlign:"center",padding:"40px",color:"#aab8e0"}}>Loading your trades…</div>}
-      {!loadingData&&<>
-        {/* Stats */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14}} className="fade-up">
-          <div style={{background:"linear-gradient(135deg,#1a3fd4,#0f2aab)",borderRadius:18,color:"#fff",padding:"24px 26px"}}>
-            <div style={{fontSize:11,letterSpacing:1,opacity:0.55,fontWeight:600,textTransform:"uppercase",marginBottom:8}}>Current Capital</div>
-            <div style={{fontFamily:"'Instrument Serif',serif",fontSize:32,letterSpacing:"-1px",lineHeight:1}}>{fmt(currentCap)}</div>
-            <div style={{marginTop:10}}><span style={{fontSize:12,background:capPct>=0?"rgba(255,255,255,0.18)":"rgba(255,60,80,0.3)",borderRadius:7,padding:"4px 10px",fontWeight:700}}>{capPct>=0?"▲":"▼"} {Math.abs(capPct).toFixed(2)}%</span></div>
-            <div style={{marginTop:14,paddingTop:14,borderTop:"1px solid rgba(255,255,255,0.12)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div><div style={{fontSize:10,opacity:0.5,textTransform:"uppercase"}}>Starting</div><div style={{fontWeight:700,fontSize:15,marginTop:2}}>{fmt(startCap)}</div></div>
-              <button onClick={()=>{setCapEdit(!capEdit);setCapInput(startCap.toString());}} style={{background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:700}}>{capEdit?"CANCEL":"EDIT"}</button>
-            </div>
-            {capEdit&&(
-              <div style={{marginTop:10,display:"flex",gap:8}}>
-                <input type="number" value={capInput} onChange={e=>setCapInput(e.target.value)} placeholder="New starting capital" style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.25)",color:"#fff",flex:1,borderRadius:8,padding:"9px 12px",outline:"none",fontFamily:"inherit",fontSize:14}}/>
-                <button onClick={saveCapital} style={{background:"#fff",color:"#1a3fd4",border:"none",borderRadius:8,padding:"9px 14px",cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:12,whiteSpace:"nowrap"}}>SAVE</button>
+      {/* Log Trade Form */}
+      <Card style={{padding:"22px 24px"}} className="fade-up">
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:"#0F172A"}}>Log a Trade</div>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            {formError&&<span style={{fontSize:12,color:"#DC2626",fontWeight:600}}>{formError}</span>}
+            <button onClick={downloadCSV} style={{background:"#F8FAFC",border:"1px solid #E2E8F0",color:"#2563EB",borderRadius:9,padding:"8px 16px",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,display:"flex",alignItems:"center",gap:5}}>⬇ CSV</button>
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"130px 1fr 160px 140px auto",gap:12,alignItems:"flex-end"}}>
+          <div><label style={{fontSize:11,fontWeight:600,color:"#64748B",textTransform:"uppercase",letterSpacing:0.5,display:"block",marginBottom:6}}>Date</label><input type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
+          <div><label style={{fontSize:11,fontWeight:600,color:"#64748B",textTransform:"uppercase",letterSpacing:0.5,display:"block",marginBottom:6}}>Ticker</label><CoinInput value={ticker} onChange={setTicker} usedCoins={usedCoins}/></div>
+          <div><label style={{fontSize:11,fontWeight:600,color:"#64748B",textTransform:"uppercase",letterSpacing:0.5,display:"block",marginBottom:6}}>Direction</label>
+            <select value={direction} onChange={e=>setDirection(e.target.value)} style={{color:direction==="long"?"#059669":"#DC2626",fontWeight:700}}>
+              <option value="long">▲ LONG</option><option value="short">▼ SHORT</option>
+            </select>
+          </div>
+          <div><label style={{fontSize:11,fontWeight:600,color:"#64748B",textTransform:"uppercase",letterSpacing:0.5,display:"block",marginBottom:6}}>Result ($)</label><input type="number" placeholder="120 or -45" value={result} onChange={e=>setResult(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTrade()}/></div>
+          <button onClick={addTrade} disabled={saving} style={{background:saving?"#93C5FD":"linear-gradient(135deg,#2563EB,#1D4ED8)",color:"#fff",border:"none",borderRadius:10,padding:"12px 20px",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:14,cursor:saving?"not-allowed":"pointer",boxShadow:"0 4px 12px rgba(37,99,235,0.25)",whiteSpace:"nowrap",transition:"all 0.2s"}}>{saving?"Saving…":"+ Add Trade"}</button>
+        </div>
+      </Card>
+
+      {/* View Tabs */}
+      <div style={{display:"flex",gap:6}}>
+        {[["log","📋 Daily Log"],["chart","📊 Monthly Chart"]].map(([t,label])=>(
+          <button key={t} onClick={()=>setActiveTab(t)} style={{padding:"9px 18px",borderRadius:10,border:"none",fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.15s",background:activeTab===t?"#2563EB":"#fff",color:activeTab===t?"#fff":"#64748B",boxShadow:activeTab===t?"0 4px 12px rgba(37,99,235,0.2)":"0 1px 3px rgba(0,0,0,0.06)"}}>{label}</button>
+        ))}
+      </div>
+
+      {/* Monthly Chart */}
+      {activeTab==="chart"&&(
+        <Card style={{padding:"24px"}} className="fade-up">
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:17,marginBottom:4}}>Monthly PNL Overview</div>
+          <div style={{fontSize:13,color:"#94A3B8",marginBottom:24}}>Last {monthlyData.length} months performance</div>
+          {monthlyData.length===0?<div style={{textAlign:"center",color:"#94A3B8",padding:"40px 0",fontSize:14}}>No data yet. Log your first trade!</div>:(
+            <>
+              <div style={{display:"flex",alignItems:"flex-end",gap:10,height:180,marginBottom:16}}>
+                {monthlyData.map(d=>{
+                  const pos=d.total>=0,h=Math.max(10,(Math.abs(d.total)/maxAbsMonth)*160);
+                  return(
+                    <div key={d.month} title={`${fmtMonth(d.month)}: ${fmt(d.total)}`} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%",gap:6,cursor:"default"}}>
+                      <div style={{fontSize:10,color:pos?"#059669":"#DC2626",fontWeight:700,whiteSpace:"nowrap"}}>{fmtShort(d.total)}</div>
+                      <div style={{width:"100%",height:h,borderRadius:pos?"8px 8px 3px 3px":"3px 3px 8px 8px",background:pos?"linear-gradient(180deg,#34D399,#10B981)":"linear-gradient(0deg,#F87171,#EF4444)",boxShadow:pos?"0 4px 12px rgba(16,185,129,0.25)":"0 4px 12px rgba(239,68,68,0.2)",transition:"height 0.4s ease"}}/>
+                      <div style={{fontSize:10,color:"#94A3B8",fontWeight:500}}>{fmtMonth(d.month)}</div>
+                    </div>
+                  );
+                })}
               </div>
-            )}
-          </div>
-          <div className="card" style={{padding:"22px"}}><span className="lbl">Total PNL</span><div style={{fontFamily:"'Instrument Serif',serif",fontSize:28,color:totalPNL>=0?"#0ea55a":"#e02044"}}>{totalPNL>=0?"+":""}{fmt(totalPNL)}</div><div style={{marginTop:8,fontSize:12,color:"#aab8e0"}}>{trades.length} trades · {days.length} days</div></div>
-          <div className="card" style={{padding:"22px"}}><span className="lbl">Day Win Rate</span><div style={{fontFamily:"'Instrument Serif',serif",fontSize:28}}>{winRate}%</div><div style={{marginTop:8,display:"flex",gap:10}}><span style={{fontSize:13,color:"#0ea55a",fontWeight:700}}>▲ {winDays}W</span><span style={{fontSize:13,color:"#e02044",fontWeight:700}}>▼ {lossDays}L</span></div></div>
-          <div className="card" style={{padding:"22px"}}><span className="lbl">Best / Worst Day</span><div style={{fontFamily:"'Instrument Serif',serif",fontSize:22,color:"#0ea55a"}}>+{fmt(best)}</div><div style={{fontFamily:"'Instrument Serif',serif",fontSize:18,color:"#e02044",marginTop:6}}>{fmt(worst)}</div></div>
-        </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+                {monthlyData.slice(-3).reverse().map(d=>(
+                  <div key={d.month} style={{background:d.total>=0?"#ECFDF5":"#FEF2F2",borderRadius:12,padding:"14px 16px",border:`1px solid ${d.total>=0?"#A7F3D0":"#FECACA"}`}}>
+                    <div style={{fontSize:12,color:"#94A3B8",fontWeight:600,marginBottom:4}}>{fmtMonth(d.month)}</div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:d.total>=0?"#059669":"#DC2626"}}>{d.total>=0?"+":""}{fmt(d.total)}</div>
+                    <div style={{fontSize:11,color:"#94A3B8",marginTop:2}}>{d.count} trades</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </Card>
+      )}
 
-        {/* Add Trade */}
-        <div className="card fade-up" style={{padding:"22px 26px"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-            <div style={{fontFamily:"'Instrument Serif',serif",fontSize:17}}>Log a Trade</div>
-            {formError&&<span style={{fontSize:12,color:"#e02044",fontWeight:600}}>{formError}</span>}
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"140px 1fr 1fr 140px 1fr auto",gap:12,alignItems:"flex-end"}}>
-            <div><span className="lbl">Date</span><input type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
-            <div><span className="lbl">Ticker</span><CoinInput value={ticker} onChange={setTicker} usedCoins={usedCoins}/></div>
-            <div><span className="lbl">Direction</span>
-              <select value={direction} onChange={e=>setDirection(e.target.value)} style={{background:"#f4f7ff",border:"1.5px solid #dce6ff",borderRadius:10,color:direction==="long"?"#2145e6":"#e02044",fontFamily:"inherit",fontSize:14,padding:"11px 14px",width:"100%",outline:"none",fontWeight:700}}>
-                <option value="long">🟢 LONG</option>
-                <option value="short">🔴 SHORT</option>
-              </select>
-            </div>
-            <div><span className="lbl">Result ($)</span><input type="number" placeholder="120 or -45" value={result} onChange={e=>setResult(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTrade()}/></div>
-            <div style={{display:"flex",alignItems:"flex-end"}}><button className="btn-primary" onClick={addTrade} disabled={saving} style={{width:"100%"}}>{saving?"Saving…":"+ Add Trade"}</button></div>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div style={{display:"flex",gap:6}}>
-          {[["log","📋 Daily Log"],["chart","📊 Monthly Chart"]].map(([t,label])=>(
-            <button key={t} className={`tab ${activeTab===t?"tab-active":"tab-inactive"}`} onClick={()=>setActiveTab(t)}>{label}</button>
-          ))}
-        </div>
-
-        {/* Monthly Chart */}
-        {activeTab==="chart"&&(
-          <div className="card fade-up" style={{padding:"24px 26px"}}>
-            <div style={{fontFamily:"'Instrument Serif',serif",fontSize:18,marginBottom:4}}>Monthly PNL Overview</div>
-            <div style={{fontSize:12,color:"#aab8e0",marginBottom:20}}>Last {monthlyData.length} months</div>
-            {monthlyData.length===0?<div style={{textAlign:"center",color:"#aab8e0",padding:"30px 0"}}>No data yet.</div>:(
-              <>
-                <div style={{display:"flex",alignItems:"flex-end",gap:8,height:160,marginBottom:12}}>
-                  {monthlyData.map(d=>{
-                    const pos=d.total>=0;const h=Math.max(8,(Math.abs(d.total)/maxAbsMonth)*140);
-                    return(
-                      <div key={d.month} title={`${fmtMonth(d.month)}: ${fmt(d.total)}`} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%",gap:4}}>
-                        <div style={{fontSize:10,color:pos?"#0ea55a":"#e02044",fontWeight:700,whiteSpace:"nowrap"}}>{pos?"+":""}{fmt(d.total).replace("$","$").replace(",","").length>8?`${(d.total/1000).toFixed(1)}k`:fmt(d.total)}</div>
-                        <div style={{width:"100%",height:h,borderRadius:pos?"8px 8px 2px 2px":"2px 2px 8px 8px",background:pos?"linear-gradient(180deg,#4fd98e,#0ea55a)":"linear-gradient(0deg,#ff6b85,#e02044)",transition:"height 0.3s"}}/>
-                        <div style={{fontSize:10,color:"#aab8e0",textAlign:"center",fontWeight:500}}>{fmtMonth(d.month)}</div>
-                      </div>
-                    );
-                  })}
+      {/* Daily Log */}
+      {activeTab==="log"&&(
+        <div className="fade-up" style={{display:"flex",flexDirection:"column",gap:10}}>
+          {loading&&<div style={{textAlign:"center",padding:"40px",color:"#94A3B8",fontSize:14}}>Loading trades…</div>}
+          {!loading&&days.length===0&&<Card style={{padding:"52px",textAlign:"center",color:"#94A3B8",fontSize:14}}>No trades yet. Log your first trade above! 🚀</Card>}
+          {!loading&&days.map(day=>(
+            <Card key={day.date} style={{overflow:"hidden",cursor:"pointer"}} onClick={()=>setExpandedDay(expandedDay===day.date?null:day.date)}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:16,alignItems:"center",padding:"16px 22px"}}>
+                <div>
+                  <div style={{fontWeight:700,fontSize:15,color:"#0F172A"}}>{fmtDate(day.date)}</div>
+                  <div style={{fontSize:12,color:"#94A3B8",marginTop:3}}>{day.trades.length} trade{day.trades.length!==1?"s":""} · {day.trades.map(t=>t.ticker).filter(Boolean).slice(0,3).join(", ")}</div>
                 </div>
-                {/* Month summary row */}
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:10,marginTop:8}}>
-                  {monthlyData.slice(-3).reverse().map(d=>(
-                    <div key={d.month} style={{background:"#f7f9ff",borderRadius:10,padding:"10px 14px",border:"1px solid #e8eeff"}}>
-                      <div style={{fontSize:11,color:"#aab8e0",fontWeight:600}}>{fmtMonth(d.month)}</div>
-                      <div style={{fontWeight:700,fontSize:16,color:d.total>=0?"#0ea55a":"#e02044",marginTop:2}}>{d.total>=0?"+":""}{fmt(d.total)}</div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:10,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:4}}>Day PNL</div>
+                  <Badge type={day.total>0?"pos":day.total<0?"neg":"zero"} style={{fontSize:15,padding:"5px 16px"}}>{day.total>0?"+":""}{fmt(day.total)}</Badge>
+                </div>
+                <div style={{width:32,height:32,borderRadius:"50%",background:"#F1F5F9",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"#94A3B8",transition:"transform 0.2s",transform:expandedDay===day.date?"rotate(180deg)":"none"}}>▾</div>
+              </div>
+              {expandedDay===day.date&&(
+                <div style={{background:"#F8FAFC",borderTop:"1px solid #F1F5F9",padding:"8px 22px 16px"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 100px 140px 60px",gap:12,padding:"8px 14px",fontSize:10,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>
+                    <div>Ticker</div><div>Direction</div><div>Result</div><div></div>
+                  </div>
+                  {day.trades.map(t=>(
+                    <div key={t.id} onClick={e=>e.stopPropagation()} style={{display:"grid",gridTemplateColumns:"1fr 100px 140px 60px",gap:12,alignItems:"center",background:"#fff",border:"1px solid #E2E8F0",borderRadius:10,padding:"12px 14px",marginBottom:6,fontSize:13}}>
+                      <div style={{fontWeight:700,color:"#2563EB",fontSize:14}}>{t.ticker||"—"}</div>
+                      <Badge type={t.note==="long"?"long":"short"}>{t.note==="long"?"▲ LONG":"▼ SHORT"}</Badge>
+                      <Badge type={parseFloat(t.result)>0?"pos":parseFloat(t.result)<0?"neg":"zero"}>{parseFloat(t.result)>0?"+":""}{fmt(t.result)}</Badge>
+                      <button onClick={()=>deleteTrade(t.id)} style={{background:"none",border:"1px solid #E2E8F0",color:"#94A3B8",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif",transition:"all 0.15s"}} onMouseEnter={e=>{e.target.style.borderColor="#EF4444";e.target.style.color="#EF4444";}} onMouseLeave={e=>{e.target.style.borderColor="#E2E8F0";e.target.style.color="#94A3B8";}}>✕</button>
                     </div>
                   ))}
                 </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Daily Log */}
-        {activeTab==="log"&&(
-          <div className="fade-up" style={{display:"flex",flexDirection:"column",gap:10}}>
-            {days.length===0?<div className="card" style={{padding:"52px",textAlign:"center",color:"#aab8e0"}}>No trades yet. Log your first trade above.</div>:days.map(day=>(
-              <div key={day.date} className="day-row">
-                <div onClick={()=>setExpandedDay(expandedDay===day.date?null:day.date)} style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:16,alignItems:"center",padding:"16px 22px",cursor:"pointer"}}>
-                  <div>
-                    <div style={{fontWeight:700,fontSize:15}}>{fmtDate(day.date)}</div>
-                    <div style={{fontSize:12,color:"#aab8e0",marginTop:2}}>{day.trades.length} trade{day.trades.length!==1?"s":""}</div>
-                  </div>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:10,color:"#aab8e0",letterSpacing:0.7,fontWeight:600,textTransform:"uppercase",marginBottom:4}}>Day PNL</div>
-                    <span className={`chip ${day.total>0?"chip-pos":day.total<0?"chip-neg":"chip-zero"}`} style={{fontSize:15,padding:"5px 16px"}}>{day.total>0?"+":""}{fmt(day.total)}</span>
-                  </div>
-                  <div style={{width:32,height:32,borderRadius:"50%",background:"#f0f4ff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"#6b85c5",transition:"transform 0.2s",transform:expandedDay===day.date?"rotate(180deg)":"none"}}>▾</div>
-                </div>
-                {expandedDay===day.date&&(
-                  <div style={{background:"#f7f9ff",padding:"4px 22px 16px",display:"flex",flexDirection:"column",gap:7}}>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 80px 120px 80px",gap:12,padding:"4px 14px",fontSize:10,color:"#aab8e0",letterSpacing:0.8,fontWeight:600,textTransform:"uppercase"}}><div>Ticker</div><div>Direction</div><div>Result</div><div></div></div>
-                    {day.trades.map(t=>(
-                      <div key={t.id} style={{display:"grid",gridTemplateColumns:"1fr 80px 120px 80px",gap:12,alignItems:"center",background:"#fff",border:"1px solid #e8eeff",borderRadius:10,padding:"11px 14px",fontSize:13}}>
-                        <div style={{fontWeight:700,color:"#2145e6"}}>{t.ticker||"—"}</div>
-                        <div><span className={t.note==="long"?"chip-long":"chip-short"}>{t.note==="long"?"▲ LONG":"▼ SHORT"}</span></div>
-                        <span className={`chip ${parseFloat(t.result)>0?"chip-pos":parseFloat(t.result)<0?"chip-neg":"chip-zero"}`}>{parseFloat(t.result)>0?"+":""}{fmt(t.result)}</span>
-                        <button className="btn-ghost" onClick={()=>deleteTrade(t.id)}>✕</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </>}
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -681,42 +682,36 @@ function App(){
 
   useEffect(()=>{
     if(!token)return;
-    const tok=localStorage.getItem("tl_token");
-    Promise.all([
-      dbFetch("/rest/v1/profiles?select=*","GET",null,tok),
-      dbFetch("/rest/v1/trades?select=*&order=date.desc,created_at.desc","GET",null,tok),
-    ]).then(([p,t])=>{
-      if(p?.length>0)setProfile(p[0]);
-      setTrades(t||[]);
-    }).catch(()=>{});
+    const tok=getToken();
+    Promise.all([dbFetch("/rest/v1/profiles?select=*","GET",null,tok),dbFetch("/rest/v1/trades?select=*&order=date.desc","GET",null,tok)])
+      .then(([p,t])=>{if(p?.length>0)setProfile(p[0]);setTrades(t||[]);}).catch(()=>{});
   },[token]);
 
   const initials=profile?.full_name?profile.full_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"?";
   const displayName=profile?.full_name||"Trader";
-  const bdayStr=profile?.birthday?new Date(profile.birthday+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+  const bdayStr=profile?.birthday?new Date(profile.birthday+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
 
-  if(!token)return <AuthScreen onLogin={onLogin}/>;
+  if(!token)return<AuthScreen onLogin={onLogin}/>;
 
   return(
-    <div style={{minHeight:"100vh",background:page==="calculator"?"#0b0e11":"#f0f4ff",fontFamily:"'Plus Jakarta Sans',sans-serif",color:"#0f1a3a"}}>
-      <style>{STYLES}</style>
-      {/* Header */}
-      <div style={{background:"#fff",borderBottom:"1px solid #dce6ff",padding:"0 20px",position:"sticky",top:0,zIndex:100}}>
-        <div style={{maxWidth:1020,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:60,gap:12}}>
-          <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-            <div style={{width:32,height:32,background:"linear-gradient(135deg,#2145e6,#0f2aab)",borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,color:"#fff"}}>◈</div>
-            <span style={{fontFamily:"'Instrument Serif',serif",fontSize:20}}>TradeLog</span>
+    <div style={{minHeight:"100vh",background:"#F8FAFC",fontFamily:"'DM Sans',sans-serif",color:"#0F172A"}}>
+      {/* Navbar */}
+      <div style={{background:"#fff",borderBottom:"1px solid #E2E8F0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
+        <div style={{maxWidth:1060,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",height:62,gap:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:9,flexShrink:0}}>
+            <div style={{width:34,height:34,background:"linear-gradient(135deg,#2563EB,#1D4ED8)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,color:"#fff"}}>◈</div>
+            <span style={{fontFamily:"'Sora',sans-serif",fontSize:19,fontWeight:700,color:"#0F172A"}}>TradeLog</span>
           </div>
-          <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          <div style={{display:"flex",gap:4,flex:1,justifyContent:"center"}}>
             {[["dashboard","📋 Dashboard"],["calculator","⚡ Calculator"],["profile","👤 Profile"]].map(([p,label])=>(
-              <button key={p} className={`nav-tab ${page===p?"nav-active":"nav-inactive"}`} onClick={()=>setPage(p)} style={{fontSize:12,padding:"7px 14px"}}>{label}</button>
+              <button key={p} onClick={()=>setPage(p)} style={{padding:"8px 16px",borderRadius:9,border:"none",fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.15s",background:page===p?"#EFF6FF":"none",color:page===p?"#2563EB":"#64748B",boxShadow:page===p?"inset 0 0 0 1.5px #BFDBFE":"none"}}>{label}</button>
             ))}
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-            <div style={{width:34,height:34,borderRadius:"50%",background:"linear-gradient(135deg,#2145e6,#0f2aab)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:12,flexShrink:0,cursor:"pointer"}} onClick={()=>setPage("profile")}>{initials}</div>
-            <div style={{lineHeight:1.2,cursor:"pointer"}} onClick={()=>setPage("profile")}>
-              <div style={{fontWeight:700,fontSize:13,color:"#0f1a3a"}}>{displayName}</div>
-              {bdayStr&&<div style={{fontSize:10,color:"#aab8e0"}}>🎂 {bdayStr}</div>}
+          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0,cursor:"pointer"}} onClick={()=>setPage("profile")}>
+            <div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#2563EB,#1D4ED8)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:13}}>{initials}</div>
+            <div>
+              <div style={{fontWeight:700,fontSize:13,color:"#0F172A"}}>{displayName}</div>
+              {bdayStr&&<div style={{fontSize:10,color:"#94A3B8"}}>🎂 {bdayStr}</div>}
             </div>
           </div>
         </div>
@@ -724,7 +719,7 @@ function App(){
 
       {page==="dashboard"&&<Dashboard token={token}/>}
       {page==="calculator"&&<CalcPage/>}
-      {page==="profile"&&<ProfilePage profile={profile} trades={trades} token={token} onLogout={onLogout}/>}
+      {page==="profile"&&<ProfilePage profile={profile} trades={trades} onLogout={onLogout}/>}
     </div>
   );
 }
