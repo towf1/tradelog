@@ -1,710 +1,782 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TradeLog Pro</title>
-
+  <title>TradeLog</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
-
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-    }
-
-    body{
-      font-family:'DM Sans',sans-serif;
-      background:#f8fafc;
-      color:#0f172a;
-      overflow-x:hidden;
-    }
-
+    *{box-sizing:border-box;margin:0;padding:0;}
     :root{
-      --blue:#2563eb;
-      --blue-dark:#1d4ed8;
-      --green:#10b981;
-      --red:#ef4444;
-      --border:#e2e8f0;
-      --gray:#64748b;
-      --card:#ffffff;
+      --blue:#2563EB;--blue-dark:#1D4ED8;--blue-light:#EFF6FF;--blue-mid:#DBEAFE;
+      --green:#10B981;--red:#EF4444;--gold:#F59E0B;
+      --gray-50:#F8FAFC;--gray-100:#F1F5F9;--gray-200:#E2E8F0;--gray-300:#CBD5E1;
+      --gray-400:#94A3B8;--gray-500:#64748B;--gray-600:#475569;--gray-700:#334155;
+      --gray-800:#1E293B;--gray-900:#0F172A;--white:#FFFFFF;
+      --shadow:0 4px 16px rgba(0,0,0,0.08);--shadow-lg:0 20px 40px rgba(37,99,235,0.12);
     }
-
-    .container{
-      max-width:1200px;
-      margin:auto;
-      padding:24px;
-    }
-
-    .card{
-      background:white;
-      border-radius:18px;
-      border:1px solid var(--border);
-      padding:20px;
-      box-shadow:0 4px 14px rgba(0,0,0,0.05);
-    }
-
-    .btn{
-      border:none;
-      border-radius:10px;
-      padding:12px 18px;
-      cursor:pointer;
-      font-weight:700;
-      transition:0.2s;
-      font-family:'DM Sans',sans-serif;
-    }
-
-    .btn-primary{
-      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
-      color:white;
-    }
-
-    .btn-secondary{
-      background:#eef2ff;
-      color:var(--blue);
-    }
-
-    .btn:hover{
-      opacity:0.92;
-    }
-
-    .input{
-      width:100%;
-      border:1.5px solid var(--border);
-      border-radius:10px;
-      padding:12px;
-      outline:none;
-      font-size:14px;
-    }
-
-    .input:focus{
-      border-color:var(--blue);
-    }
-
-    .grid{
-      display:grid;
-      gap:16px;
-    }
-
-    .stats-grid{
-      grid-template-columns:repeat(4,1fr);
-    }
-
-    .trade-grid{
-      grid-template-columns:repeat(5,1fr);
-    }
-
-    .login-wrapper{
-      min-height:100vh;
-      display:flex;
-    }
-
-    .login-left{
-      width:420px;
-      background:linear-gradient(135deg,#1d4ed8,#2563eb);
-      color:white;
-      padding:50px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-    }
-
-    .login-right{
-      flex:1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:30px;
-    }
-
-    .profile-name{
-      font-family:'Sora',sans-serif;
-      font-size:28px;
-      font-weight:700;
-      line-height:1.3;
-      word-break:break-word;
-    }
-
-    .table-wrap{
-      overflow-x:auto;
-    }
-
-    table{
-      width:100%;
-      min-width:700px;
-      border-collapse:collapse;
-    }
-
-    th,td{
-      padding:14px;
-      border-bottom:1px solid #f1f5f9;
-      text-align:left;
-    }
-
-    .positive{
-      color:var(--green);
-      font-weight:700;
-    }
-
-    .negative{
-      color:var(--red);
-      font-weight:700;
-    }
-
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:20px;
-      margin-bottom:20px;
-      flex-wrap:wrap;
-    }
-
-    @media(max-width:768px){
-
-      .container{
-        padding:14px;
-      }
-
-      .login-wrapper{
-        flex-direction:column;
-      }
-
-      .login-left{
-        width:100%;
-        padding:30px 20px;
-      }
-
-      .stats-grid,
-      .trade-grid{
-        grid-template-columns:1fr;
-      }
-
-      .profile-name{
-        font-size:20px;
-      }
-
-      .card{
-        padding:16px;
-      }
-
-      h1{
-        font-size:26px !important;
-      }
-    }
-
+    body{font-family:'DM Sans',sans-serif;background:var(--gray-50);color:var(--gray-800);}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:4px}
+    input[type=text],input[type=number],input[type=date],input[type=email],input[type=password]{background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:10px;color:var(--gray-800);font-family:'DM Sans',sans-serif;font-size:14px;padding:12px 16px;width:100%;outline:none;transition:all 0.2s;}
+    input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.1);background:#fff;}
+    input::placeholder{color:var(--gray-400);}
+    select{background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:10px;color:var(--gray-800);font-family:'DM Sans',sans-serif;font-size:14px;padding:12px 16px;width:100%;outline:none;cursor:pointer;transition:all 0.2s;}
+    select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+    input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--gray-200);outline:none;cursor:pointer;}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--blue);cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,0.3);}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes scaleIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+    .fade-up{animation:fadeUp 0.4s ease both;}
+    .card{background:#fff;border-radius:16px;border:1px solid var(--gray-200);box-shadow:0 2px 12px rgba(0,0,0,0.05);}
   </style>
 </head>
-
 <body>
-
 <div id="root"></div>
-
 <script type="text/babel">
+const {useState,useMemo,useEffect,useCallback,useRef}=React;
 
-const {useState,useMemo} = React;
+const SUPABASE_URL="https://mhbumikrwpwrayedozec.supabase.co";
+const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oYnVtaWtyd3B3cmF5ZWRvemVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzUwMzEsImV4cCI6MjA5MzcxMTAzMX0.zXshcM476oUJ3-UhKpiRbaQDDvhoAr1rLG3EpBAlrAo";
 
-function Button({children,className='',...props}){
+const refreshToken=async()=>{
+  const rt=localStorage.getItem("tl_refresh");if(!rt)return null;
+  try{const res=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},body:JSON.stringify({refresh_token:rt})});
+  const d=await res.json();if(d.access_token){localStorage.setItem("tl_token",d.access_token);if(d.refresh_token)localStorage.setItem("tl_refresh",d.refresh_token);return d.access_token;}}catch{}return null;
+};
+
+const dbFetch=async(path,method="GET",body=null,token=null,extra={})=>{
+  const doReq=async(tok)=>{const h={"Content-Type":"application/json","apikey":SUPABASE_KEY,...extra};if(tok)h["Authorization"]=`Bearer ${tok}`;return fetch(`${SUPABASE_URL}${path}`,{method,headers:h,body:body?JSON.stringify(body):null});};
+  let res=await doReq(token);
+  if(res.status===401&&token){const nt=await refreshToken();if(nt){token=nt;res=await doReq(nt);}}
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||e.error_description||"Failed");}
+  const t=await res.text();return t?JSON.parse(t):null;
+};
+const authFetch=async(path,body)=>{
+  const res=await fetch(`${SUPABASE_URL}/auth/v1${path}`,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},body:JSON.stringify(body)});
+  const d=await res.json();if(!res.ok)throw new Error(d.error_description||d.msg||"Auth failed");return d;
+};
+const upsert=(path,body,token)=>dbFetch(`/rest/v1/${path}`,"POST",body,token,{"Prefer":"resolution=merge-duplicates,return=representation"});
+const getToken=()=>localStorage.getItem("tl_token");
+const getUID=()=>{try{return JSON.parse(atob(getToken().split(".")[1])).sub;}catch{return null;}};
+
+const fmt=v=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2}).format(v);
+const fmtShort=v=>{const a=Math.abs(v);if(a===0)return "$0.00";return a>=1000?`${v<0?"-":""}$${(a/1000).toFixed(1)}k`:fmt(v);};
+const fmtDate=d=>new Date(d+"T00:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+const fmtMonth=m=>{const[y,mo]=m.split("-");return new Date(parseInt(y),parseInt(mo)-1).toLocaleDateString("en-US",{month:"short",year:"2-digit"});};
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const COINS=["BTC","ETH","BNB","SOL","XRP","ADA","DOGE","AVAX","DOT","MATIC","LINK","LTC","UNI","ATOM","TRX","NEAR","APT","OP","ARB","INJ","TIA","SUI","SEI","JUP","WIF","BONK","PEPE","FLOKI","SHIB","FET","RNDR","GRT","SAND","MANA","AXS","GALA","IMX","ALGO","ICP","FIL","EOS","XLM","VET","HBAR","AAVE","MKR","COMP","CRV","SUSHI","ZEC","XMR","ETC","BCH"];
+
+// ── SHARED COMPONENTS ─────────────────────────────────────────
+const Badge=({children,type="pos"})=>{
+  const s={pos:{background:"#ECFDF5",color:"#059669"},neg:{background:"#FEF2F2",color:"#DC2626"},zero:{background:"#F1F5F9",color:"#64748B"},long:{background:"#EFF6FF",color:"#2563EB"},short:{background:"#FFF7ED",color:"#EA580C"}};
+  return<span style={{...s[type],borderRadius:6,padding:"3px 10px",fontSize:12,fontWeight:700,display:"inline-block"}}>{children}</span>;
+};
+
+const Donut=({win,loss,size=130})=>{
+  const total=win+loss;
+  if(!total)return<div style={{width:size,height:size,borderRadius:"50%",background:"#F1F5F9",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"#94A3B8"}}>No data</div>;
+  const r=46,cx=60,cy=60,circ=2*Math.PI*r,winArc=circ*(win/total);
   return(
-    <button className={`btn ${className}`} {...props}>
-      {children}
-    </button>
-  )
-}
-
-function Input(props){
-  return <input className="input" {...props}/>
-}
-
-function LoginPage({onLogin}){
-
-  const[email,setEmail] = useState('');
-  const[password,setPassword] = useState('');
-
-  return(
-    <div className="login-wrapper">
-
-      <div className="login-left">
-
-        <h1 style={{
-          fontFamily:'Sora',
-          fontSize:40,
-          fontWeight:700,
-          marginBottom:20
-        }}>
-          TradeLog Pro
-        </h1>
-
-        <p style={{
-          lineHeight:1.8,
-          opacity:0.85
-        }}>
-          Track your trading performance with a clean and professional dashboard.
-        </p>
-
+    <div style={{position:"relative",width:size,height:size}}>
+      <svg width={size} height={size} viewBox="0 0 120 120">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#FEE2E2" strokeWidth="14"/>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#10B981" strokeWidth="14" strokeDasharray={`${winArc} ${circ-winArc}`} strokeDashoffset={circ*0.25} strokeLinecap="round"/>
+      </svg>
+      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:"#1E293B"}}>{((win/total)*100).toFixed(0)}%</div>
+        <div style={{fontSize:10,color:"#94A3B8",fontWeight:500}}>WIN</div>
       </div>
+    </div>
+  );
+};
 
-      <div className="login-right">
+const CoinInput=({value,onChange,usedCoins})=>{
+  const [show,setShow]=useState(false);const ref=useRef();
+  const suggestions=useMemo(()=>{if(!value)return[];const v=value.toUpperCase();return[...new Set([...usedCoins,...COINS])].filter(c=>c.startsWith(v)&&c!==v).slice(0,7);},[value,usedCoins]);
+  useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setShow(false);};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
+  return(
+    <div ref={ref} style={{position:"relative"}}>
+      <input type="text" placeholder="BTC, ETH…" value={value} onChange={e=>{onChange(e.target.value.toUpperCase());setShow(true);}} onFocus={()=>setShow(true)}/>
+      {show&&suggestions.length>0&&(
+        <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1.5px solid #E2E8F0",borderRadius:10,boxShadow:"0 8px 24px rgba(0,0,0,0.1)",zIndex:300,marginTop:4,overflow:"hidden"}}>
+          {suggestions.map(c=><div key={c} onMouseDown={()=>{onChange(c);setShow(false);}} style={{padding:"10px 16px",cursor:"pointer",fontSize:14,fontWeight:500}} onMouseEnter={e=>e.target.style.background="#EFF6FF"} onMouseLeave={e=>e.target.style.background=""}>{c}</div>)}
+        </div>
+      )}
+    </div>
+  );
+};
 
-        <div className="card" style={{
-          width:'100%',
-          maxWidth:420
-        }}>
+// ── FOOTER ────────────────────────────────────────────────────
+const Footer=()=>(
+  <footer style={{background:"#0F172A",color:"#94A3B8",padding:"28px 24px",marginTop:48,textAlign:"center"}}>
+    <div style={{maxWidth:1060,margin:"0 auto"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:12}}>
+        <div style={{width:28,height:28,background:"linear-gradient(135deg,#2563EB,#1D4ED8)",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,color:"#fff"}}>◈</div>
+        <span style={{fontFamily:"'Sora',sans-serif",fontSize:16,fontWeight:700,color:"#fff"}}>TradeLog</span>
+      </div>
+      <div style={{fontSize:12,color:"#475569",marginBottom:8}}>Track every trade. Grow every day.</div>
+      <div style={{width:48,height:1,background:"#1E293B",margin:"12px auto"}}/>
+      <div style={{fontSize:13,color:"#64748B"}}>
+        © {new Date().getFullYear()} <span style={{color:"#94A3B8",fontWeight:600}}>Towsif Ahmed</span>. All rights reserved.
+      </div>
+      <div style={{fontSize:11,color:"#334155",marginTop:6}}>Built with ❤️ for traders · Powered by Supabase & Vercel</div>
+    </div>
+  </footer>
+);
 
-          <h2 style={{
-            fontFamily:'Sora',
-            marginBottom:20
-          }}>
-            Sign In
-          </h2>
+// ── AUTH ──────────────────────────────────────────────────────
+function AuthScreen({onLogin}){
+  const [mode,setMode]=useState("login");
+  const [fullName,setFullName]=useState("");const[birthday,setBirthday]=useState("");
+  const [email,setEmail]=useState("");const[password,setPassword]=useState("");
+  const [loading,setLoading]=useState(false);const[error,setError]=useState("");const[success,setSuccess]=useState("");
+  const sw=m=>{setMode(m);setError("");setSuccess("");};
+  const handle=async()=>{
+    setError("");setSuccess("");
+    if(!email||!password){setError("Enter email and password.");return;}
+    if(password.length<6){setError("Password must be at least 6 characters.");return;}
+    if(mode==="signup"&&!fullName.trim()){setError("Enter your full name.");return;}
+    if(mode==="signup"&&!birthday){setError("Enter your birthday.");return;}
+    setLoading(true);
+    try{
+      if(mode==="login"){const d=await authFetch("/token?grant_type=password",{email,password});localStorage.setItem("tl_refresh",d.refresh_token||"");onLogin(d.access_token);}
+      else{const d=await authFetch("/signup",{email,password});
+        if(d.access_token&&d.user?.id){localStorage.setItem("tl_refresh",d.refresh_token||"");await upsert("profiles",{user_id:d.user.id,full_name:fullName.trim(),birthday},d.access_token);onLogin(d.access_token);}
+        else{setSuccess("Account created! Please sign in.");sw("login");}}
+    }catch(e){setError(e.message);}finally{setLoading(false);}
+  };
 
-          <div style={{
-            display:'flex',
-            flexDirection:'column',
-            gap:14
-          }}>
-
-            <Input
-              type="email"
-              placeholder="Email Address"
-              value={email}
-              onChange={(e)=>setEmail(e.target.value)}
-            />
-
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e)=>setPassword(e.target.value)}
-            />
-
-            <Button
-              className="btn-primary"
-              onClick={onLogin}
-            >
-              Login
-            </Button>
-
+  return(
+    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",fontFamily:"'DM Sans',sans-serif"}}>
+      <div style={{display:"flex",flex:1}}>
+        {/* Left */}
+        <div style={{flex:"0 0 460px",background:"linear-gradient(145deg,#1D4ED8,#2563EB,#3B82F6)",padding:"56px 48px",display:"flex",flexDirection:"column",justifyContent:"space-between",color:"#fff",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:-80,right:-80,width:300,height:300,borderRadius:"50%",background:"rgba(255,255,255,0.06)"}}/>
+          <div style={{position:"absolute",bottom:-60,left:-60,width:220,height:220,borderRadius:"50%",background:"rgba(255,255,255,0.05)"}}/>
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:56}}>
+              <div style={{width:40,height:40,borderRadius:12,background:"rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>◈</div>
+              <span style={{fontFamily:"'Sora',sans-serif",fontSize:22,fontWeight:700}}>TradeLog</span>
+            </div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:34,fontWeight:700,lineHeight:1.2,marginBottom:14}}>Track every trade.<br/>Grow every day.</div>
+            <div style={{fontSize:14,opacity:0.75,lineHeight:1.7}}>Log your crypto trades, calculate PnL, and analyze performance — all in one place.</div>
           </div>
-
+          <div style={{display:"flex",flexDirection:"column",gap:13}}>
+            {[["📊","Per-trade PnL tracking"],["⚡","Binance Futures calculator"],["📈","Monthly performance charts"],["👤","Profile & coin analytics"]].map(([i,t])=>(
+              <div key={t} style={{display:"flex",alignItems:"center",gap:12,fontSize:14,opacity:0.85}}><span style={{fontSize:18}}>{i}</span><span>{t}</span></div>
+            ))}
+          </div>
         </div>
-
+        {/* Right */}
+        <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 24px",background:"#F8FAFC"}}>
+          <div style={{width:"100%",maxWidth:420,animation:"fadeUp 0.4s ease both"}}>
+            <div style={{marginBottom:28}}>
+              <div style={{fontFamily:"'Sora',sans-serif",fontSize:26,fontWeight:700,color:"#0F172A",marginBottom:6}}>{mode==="login"?"Welcome back 👋":"Create account"}</div>
+              <div style={{fontSize:14,color:"#64748B"}}>{mode==="login"?"Sign in to your TradeLog account":"Join TradeLog and start tracking"}</div>
+            </div>
+            {error&&<div style={{background:"#FEF2F2",border:"1px solid #FECACA",borderRadius:10,padding:"12px 16px",fontSize:13,color:"#DC2626",marginBottom:16,fontWeight:500}}>{error}</div>}
+            {success&&<div style={{background:"#ECFDF5",border:"1px solid #A7F3D0",borderRadius:10,padding:"12px 16px",fontSize:13,color:"#059669",marginBottom:16,fontWeight:500}}>{success}</div>}
+            <div style={{display:"flex",flexDirection:"column",gap:13}}>
+              {mode==="signup"&&<>
+                <div><label style={{fontSize:11,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:0.6,display:"block",marginBottom:6}}>Full Name</label><input type="text" placeholder="e.g. Towfiq Ahmed" value={fullName} onChange={e=>setFullName(e.target.value)}/></div>
+                <div><label style={{fontSize:11,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:0.6,display:"block",marginBottom:6}}>Birthday</label><input type="date" value={birthday} onChange={e=>setBirthday(e.target.value)}/></div>
+              </>}
+              <div><label style={{fontSize:11,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:0.6,display:"block",marginBottom:6}}>Email</label><input type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
+              <div><label style={{fontSize:11,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:0.6,display:"block",marginBottom:6}}>Password</label><input type="password" placeholder="Min. 6 characters" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
+              <button onClick={handle} disabled={loading} style={{background:loading?"#93C5FD":"linear-gradient(135deg,#2563EB,#1D4ED8)",color:"#fff",border:"none",borderRadius:12,padding:"14px",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:15,cursor:loading?"not-allowed":"pointer",marginTop:4,boxShadow:"0 4px 16px rgba(37,99,235,0.3)"}}>
+                {loading?"Please wait…":mode==="login"?"Sign In →":"Create Account →"}
+              </button>
+            </div>
+            <div style={{textAlign:"center",marginTop:22,fontSize:13,color:"#94A3B8"}}>
+              {mode==="login"?"Don't have an account? ":"Already have an account? "}
+              <span onClick={()=>sw(mode==="login"?"signup":"login")} style={{color:"#2563EB",fontWeight:700,cursor:"pointer",textDecoration:"underline"}}>{mode==="login"?"Sign Up":"Sign In"}</span>
+            </div>
+          </div>
+        </div>
       </div>
-
+      <Footer/>
     </div>
-  )
+  );
 }
 
-function ProfileModal({profile,onClose,onSave}){
+// ── PROFILE PAGE ──────────────────────────────────────────────
+function ProfilePage({profile,setProfile,trades,onLogout}){
+  const [uploading,setUploading]=useState(false);
+  const [uploadMsg,setUploadMsg]=useState("");
+  const fileRef=useRef();
 
-  const[name,setName] = useState(profile.full_name);
-
-  return(
-    <div style={{
-      position:'fixed',
-      inset:0,
-      background:'rgba(0,0,0,0.45)',
-      display:'flex',
-      alignItems:'center',
-      justifyContent:'center',
-      zIndex:1000,
-      padding:20
-    }}>
-
-      <div className="card" style={{
-        width:'100%',
-        maxWidth:420
-      }}>
-
-        <h2 style={{
-          fontFamily:'Sora',
-          marginBottom:20
-        }}>
-          Edit Profile
-        </h2>
-
-        <Input
-          value={name}
-          maxLength={50}
-          onChange={(e)=>setName(e.target.value)}
-        />
-
-        <div style={{
-          display:'flex',
-          gap:10,
-          marginTop:20
-        }}>
-
-          <Button
-            className="btn-secondary"
-            onClick={onClose}
-          >
-            Cancel
-          </Button>
-
-          <Button
-            className="btn-primary"
-            onClick={()=>onSave(name)}
-          >
-            Save
-          </Button>
-
-        </div>
-
-      </div>
-
-    </div>
-  )
-}
-
-function Dashboard(){
-
-  const[showModal,setShowModal] = useState(false);
-
-  const[profile,setProfile] = useState({
-    full_name:'Towsif Ahmed Rahman'
-  });
-
-  const[trades,setTrades] = useState([
-    {ticker:'BTC',direction:'LONG',result:240},
-    {ticker:'ETH',direction:'SHORT',result:-120},
-    {ticker:'SOL',direction:'LONG',result:410}
-  ]);
-
-  const[ticker,setTicker] = useState('');
-  const[direction,setDirection] = useState('');
-  const[result,setResult] = useState('');
-
-  const totalPnl = useMemo(()=>{
-    return trades.reduce((sum,t)=>sum+t.result,0);
+  // All stats calculated from trades
+  const stats=useMemo(()=>{
+    const days={};
+    trades.forEach(t=>{
+      if(!days[t.date])days[t.date]={trades:[],total:0};
+      days[t.date].trades.push(t);
+      days[t.date].total+=parseFloat(t.result);
+    });
+    const dayList=Object.values(days);
+    const totalPNL=dayList.reduce((s,d)=>s+d.total,0);
+    const winDays=dayList.filter(d=>d.total>0).length;
+    const lossDays=dayList.filter(d=>d.total<0).length;
+    const winTrades=trades.filter(t=>parseFloat(t.result)>0).length;
+    const lossTrades=trades.filter(t=>parseFloat(t.result)<0).length;
+    const breakEven=trades.length-winTrades-lossTrades;
+    const best=dayList.length?Math.max(...dayList.map(d=>d.total)):0;
+    const worst=dayList.length?Math.min(...dayList.map(d=>d.total)):0;
+    const avgDaily=dayList.length?totalPNL/dayList.length:0;
+    const dayWinRate=dayList.length?(winDays/dayList.length*100):0;
+    const tradeWinRate=trades.length?(winTrades/trades.length*100):0;
+    // Coin breakdown
+    const coinMap={};
+    trades.forEach(t=>{
+      const c=t.ticker||"OTHER";
+      if(!coinMap[c])coinMap[c]={count:0,pnl:0,wins:0};
+      coinMap[c].count++;coinMap[c].pnl+=parseFloat(t.result);
+      if(parseFloat(t.result)>0)coinMap[c].wins++;
+    });
+    const coinList=Object.entries(coinMap).sort((a,b)=>b[1].count-a[1].count).slice(0,8);
+    const mostTraded=coinList[0]?.[0]||"—";
+    // Streaks
+    const sortedDays=[...dayList].sort((a,b)=>a.date?.localeCompare(b.date)||0);
+    let curStreak=0,bestStreak=0,cur=0;
+    sortedDays.forEach(d=>{if(d.total>0){cur++;bestStreak=Math.max(bestStreak,cur);}else cur=0;});
+    sortedDays.slice().reverse().forEach((d,i)=>{if(i===0||(d.total>0&&curStreak===i))curStreak=i+1;});
+    return{totalPNL,winDays,lossDays,winTrades,lossTrades,breakEven,best,worst,avgDaily,dayWinRate,tradeWinRate,coinList,mostTraded,totalDays:dayList.length,bestStreak};
   },[trades]);
 
-  const addTrade = ()=>{
+  const handleAvatarUpload=async(e)=>{
+    const file=e.target.files[0];if(!file)return;
+    if(file.size>500*1024){setUploadMsg("❌ File too large. Max 500KB.");return;}
+    setUploading(true);setUploadMsg("");
+    try{
+      const tok=getToken(),uid=getUID();
+      const ext=file.name.split(".").pop();
+      const path=`${uid}/avatar.${ext}`;
+      // Upload to Supabase Storage
+      const formData=new FormData();formData.append("",file);
+      const res=await fetch(`${SUPABASE_URL}/storage/v1/object/avatars/${path}`,{
+        method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${tok}`,"x-upsert":"true","Content-Type":file.type},body:file
+      });
+      if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.message||"Upload failed");}
+      const avatarUrl=`${SUPABASE_URL}/storage/v1/object/public/avatars/${path}?t=${Date.now()}`;
+      await upsert("profiles",{user_id:uid,avatar_url:avatarUrl},tok);
+      setProfile(prev=>({...prev,avatar_url:avatarUrl}));
+      setUploadMsg("✅ Profile picture updated!");
+    }catch(err){setUploadMsg("❌ "+err.message);}
+    finally{setUploading(false);}
+  };
 
-    if(!ticker || !direction || !result){
-      return;
-    }
+  const initials=profile?.full_name?profile.full_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"?";
+  const bdayStr=profile?.birthday?new Date(profile.birthday+"T00:00:00").toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}):"—";
 
-    setTrades(prev=>[
-      {
-        ticker:ticker.toUpperCase(),
-        direction,
-        result:Number(result)
-      },
-      ...prev
-    ]);
-
-    setTicker('');
-    setDirection('');
-    setResult('');
-  }
+  const StatBox=({label,value,color="#0F172A",bg="#F8FAFC",icon})=>(
+    <div style={{background:bg,borderRadius:12,padding:"16px 18px",border:"1px solid #E2E8F0"}}>
+      {icon&&<div style={{fontSize:20,marginBottom:8}}>{icon}</div>}
+      <div style={{fontFamily:"'Sora',sans-serif",fontSize:20,fontWeight:700,color}}>{value}</div>
+      <div style={{fontSize:11,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginTop:4}}>{label}</div>
+    </div>
+  );
 
   return(
-    <div className="container">
+    <div style={{maxWidth:960,margin:"0 auto",padding:"28px 24px",display:"flex",flexDirection:"column",gap:24}} className="fade-up">
 
-      <div className="topbar">
-
-        <div>
-          <h1 style={{
-            fontFamily:'Sora',
-            fontSize:32
-          }}>
-            Dashboard
-          </h1>
-
-          <div style={{
-            marginTop:6,
-            color:'#64748b'
-          }}>
-            Trading performance overview
+      {/* Profile Hero */}
+      <div className="card" style={{overflow:"hidden"}}>
+        <div style={{background:"linear-gradient(135deg,#1D4ED8,#2563EB,#3B82F6)",padding:"32px 36px 72px",position:"relative"}}>
+          <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:"rgba(255,255,255,0.06)"}}/>
+          <div style={{display:"flex",justifyContent:"flex-end"}}>
+            <button onClick={()=>{if(onLogout)onLogout();}} style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.25)",color:"#fff",borderRadius:10,padding:"9px 20px",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,zIndex:10,position:"relative"}}>Sign Out</button>
           </div>
         </div>
 
-        <Button className="btn-secondary">
-          Logout
-        </Button>
-
-      </div>
-
-      <div className="card">
-
-        <div style={{
-          display:'flex',
-          justifyContent:'space-between',
-          alignItems:'center',
-          gap:20,
-          flexWrap:'wrap'
-        }}>
-
-          <div style={{
-            display:'flex',
-            alignItems:'center',
-            gap:16,
-            flex:1,
-            minWidth:0
-          }}>
-
-            <div style={{
-              width:70,
-              height:70,
-              borderRadius:'50%',
-              background:'#2563eb',
-              color:'white',
-              display:'flex',
-              alignItems:'center',
-              justifyContent:'center',
-              fontWeight:700,
-              fontSize:24,
-              flexShrink:0
-            }}>
-              {profile.full_name.charAt(0)}
+        <div style={{padding:"0 36px 28px",marginTop:-52,display:"flex",alignItems:"flex-end",gap:20,flexWrap:"wrap"}}>
+          {/* Avatar with upload */}
+          <div style={{position:"relative",flexShrink:0}}>
+            <div style={{width:90,height:90,borderRadius:"50%",border:"4px solid #fff",boxShadow:"0 4px 16px rgba(0,0,0,0.12)",overflow:"hidden",background:"linear-gradient(135deg,#2563EB,#1D4ED8)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              {profile?.avatar_url
+                ?<img src={profile.avatar_url} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                :<span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:30,color:"#fff"}}>{initials}</span>
+              }
             </div>
+            <button onClick={()=>fileRef.current?.click()} title="Upload profile picture"
+              style={{position:"absolute",bottom:2,right:2,width:28,height:28,borderRadius:"50%",background:"#2563EB",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:13,boxShadow:"0 2px 8px rgba(37,99,235,0.3)"}}>
+              📷
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleAvatarUpload}/>
+          </div>
 
-            <div style={{
-              flex:1,
-              minWidth:0
-            }}>
-              <div className="profile-name">
-                {profile.full_name}
-              </div>
-
-              <div style={{
-                color:'#64748b',
-                marginTop:6
-              }}>
-                Professional Trader
-              </div>
+          <div style={{flex:1,minWidth:0,paddingBottom:4}}>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:24,fontWeight:700,color:"#0F172A"}}>{profile?.full_name||"Trader"}</div>
+            <div style={{fontSize:13,color:"#64748B",marginTop:4,display:"flex",gap:16,flexWrap:"wrap"}}>
+              <span>🎂 {bdayStr}</span>
+              <span>📊 {trades.length} total trades</span>
+              <span>📅 {stats.totalDays} trading days</span>
             </div>
-
+            {uploadMsg&&<div style={{marginTop:8,fontSize:12,color:uploadMsg.startsWith("✅")?"#059669":"#DC2626",fontWeight:600}}>{uploading?"Uploading…":uploadMsg}</div>}
           </div>
-
-          <Button
-            className="btn-primary"
-            onClick={()=>setShowModal(true)}
-          >
-            Edit Name
-          </Button>
-
         </div>
 
+        {/* Upload hint */}
+        <div style={{padding:"0 36px 20px"}}>
+          <button onClick={()=>fileRef.current?.click()} style={{background:"#EFF6FF",border:"1.5px dashed #BFDBFE",color:"#2563EB",borderRadius:10,padding:"10px 20px",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:8}}>
+            📷 {profile?.avatar_url?"Change Profile Picture":"Upload Profile Picture"}
+          </button>
+          <div style={{fontSize:11,color:"#94A3B8",marginTop:6}}>JPG, PNG or GIF · Max 500KB</div>
+        </div>
       </div>
 
-      <div className="grid stats-grid" style={{
-        marginTop:20
-      }}>
-
-        <div className="card">
-
-          <div style={{
-            color:'#64748b',
-            marginBottom:8
-          }}>
-            Total Trades
-          </div>
-
-          <h2 style={{
-            fontFamily:'Sora'
-          }}>
-            {trades.length}
-          </h2>
-
+      {/* Quick Stats Grid - Auto calculated */}
+      <div>
+        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:"#0F172A",marginBottom:14}}>📊 Trading Statistics <span style={{fontSize:12,color:"#94A3B8",fontWeight:400,fontFamily:"'DM Sans',sans-serif"}}>(auto-calculated from your trades)</span></div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12}}>
+          <StatBox icon="📋" label="Total Trades" value={trades.length}/>
+          <StatBox icon="💰" label="Total PNL" value={`${stats.totalPNL>=0?"+":""}${fmt(stats.totalPNL)}`} color={stats.totalPNL>=0?"#059669":"#DC2626"} bg={stats.totalPNL>=0?"#ECFDF5":"#FEF2F2"}/>
+          <StatBox icon="🎯" label="Day Win Rate" value={`${stats.dayWinRate.toFixed(1)}%`} color="#2563EB" bg="#EFF6FF"/>
+          <StatBox icon="📈" label="Trade Win Rate" value={`${stats.tradeWinRate.toFixed(1)}%`} color="#7C3AED" bg="#F5F3FF"/>
+          <StatBox icon="🏆" label="Best Day" value={fmt(stats.best)} color="#059669" bg="#ECFDF5"/>
+          <StatBox icon="📉" label="Worst Day" value={fmt(stats.worst)} color="#DC2626" bg="#FEF2F2"/>
+          <StatBox icon="⚡" label="Avg Daily PNL" value={fmt(stats.avgDaily)} color={stats.avgDaily>=0?"#059669":"#DC2626"} bg={stats.avgDaily>=0?"#ECFDF5":"#FEF2F2"}/>
+          <StatBox icon="🔥" label="Best Win Streak" value={`${stats.bestStreak} days`} color="#EA580C" bg="#FFF7ED"/>
+          <StatBox icon="✅" label="Win Days" value={stats.winDays} color="#059669" bg="#ECFDF5"/>
+          <StatBox icon="❌" label="Loss Days" value={stats.lossDays} color="#DC2626" bg="#FEF2F2"/>
+          <StatBox icon="⭐" label="Most Traded" value={stats.mostTraded} color="#2563EB" bg="#EFF6FF"/>
+          <StatBox icon="📅" label="Trading Days" value={stats.totalDays}/>
         </div>
-
-        <div className="card">
-
-          <div style={{
-            color:'#64748b',
-            marginBottom:8
-          }}>
-            Total PNL
-          </div>
-
-          <h2
-            className={totalPnl >=0 ? 'positive':'negative'}
-            style={{
-              fontFamily:'Sora'
-            }}
-          >
-            ${totalPnl}
-          </h2>
-
-        </div>
-
-        <div className="card">
-
-          <div style={{
-            color:'#64748b',
-            marginBottom:8
-          }}>
-            Win Rate
-          </div>
-
-          <h2 style={{
-            fontFamily:'Sora'
-          }}>
-            64%
-          </h2>
-
-        </div>
-
-        <div className="card">
-
-          <div style={{
-            color:'#64748b',
-            marginBottom:8
-          }}>
-            Best Trade
-          </div>
-
-          <h2 style={{
-            fontFamily:'Sora'
-          }}>
-            $410
-          </h2>
-
-        </div>
-
       </div>
 
-      <div className="card" style={{
-        marginTop:20
-      }}>
-
-        <h2 style={{
-          fontFamily:'Sora',
-          marginBottom:20
-        }}>
-          Add Trade
-        </h2>
-
-        <div className="grid trade-grid">
-
-          <Input
-            placeholder="Ticker"
-            value={ticker}
-            onChange={(e)=>setTicker(e.target.value)}
-          />
-
-          <Input
-            placeholder="Direction"
-            value={direction}
-            onChange={(e)=>setDirection(e.target.value)}
-          />
-
-          <Input
-            placeholder="Result"
-            type="number"
-            value={result}
-            onChange={(e)=>setResult(e.target.value)}
-          />
-
-          <div></div>
-
-          <Button
-            className="btn-primary"
-            onClick={addTrade}
-          >
-            Add Trade
-          </Button>
-
-        </div>
-
-      </div>
-
-      <div className="card" style={{
-        marginTop:20
-      }}>
-
-        <h2 style={{
-          fontFamily:'Sora',
-          marginBottom:20
-        }}>
-          Trade History
-        </h2>
-
-        <div className="table-wrap">
-
-          <table>
-
-            <thead>
-              <tr>
-                <th>Ticker</th>
-                <th>Direction</th>
-                <th>Result</th>
-              </tr>
-            </thead>
-
-            <tbody>
-
-              {trades.map((trade,index)=>(
-                <tr key={index}>
-
-                  <td>{trade.ticker}</td>
-
-                  <td>{trade.direction}</td>
-
-                  <td className={trade.result >=0 ? 'positive':'negative'}>
-                    ${trade.result}
-                  </td>
-
-                </tr>
+      {/* Win/Loss donut + day breakdown */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+        <div className="card" style={{padding:"24px"}}>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,marginBottom:20}}>Trade Win Rate</div>
+          <div style={{display:"flex",alignItems:"center",gap:24}}>
+            <Donut win={stats.winTrades} loss={stats.lossTrades} size={130}/>
+            <div style={{flex:1,display:"flex",flexDirection:"column",gap:10}}>
+              {[["✅ Winning",stats.winTrades,"#059669","#ECFDF5"],["❌ Losing",stats.lossTrades,"#DC2626","#FEF2F2"],["➖ Break Even",stats.breakEven,"#64748B","#F1F5F9"]].map(([l,v,c,bg])=>(
+                <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:bg,borderRadius:8,padding:"8px 12px"}}>
+                  <span style={{fontSize:13,color:c,fontWeight:600}}>{l}</span>
+                  <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:c}}>{v}</span>
+                </div>
               ))}
-
-            </tbody>
-
-          </table>
-
+            </div>
+          </div>
         </div>
 
+        <div className="card" style={{padding:"24px"}}>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,marginBottom:20}}>Day Performance</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {[["🏆 Best Day",fmt(stats.best),"#059669","#ECFDF5"],["📉 Worst Day",fmt(stats.worst),"#DC2626","#FEF2F2"],["✅ Winning Days",stats.winDays,"#2563EB","#EFF6FF"],["❌ Losing Days",stats.lossDays,"#DC2626","#FEF2F2"],["⚡ Avg Daily",fmt(stats.avgDaily),stats.avgDaily>=0?"#059669":"#DC2626",stats.avgDaily>=0?"#ECFDF5":"#FEF2F2"]].map(([l,v,c,bg])=>(
+              <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:bg,borderRadius:10,padding:"10px 14px"}}>
+                <span style={{fontSize:13,fontWeight:600,color:"#475569"}}>{l}</span>
+                <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:c,fontSize:14}}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {showModal && (
+      {/* Coin table */}
+      {stats.coinList.length>0&&(
+        <div className="card" style={{overflow:"hidden"}}>
+          <div style={{padding:"20px 24px",borderBottom:"1px solid #F1F5F9",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16}}>🪙 Coin Performance</div>
+          <div style={{padding:"8px 0"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 80px 130px 130px 90px",gap:12,padding:"10px 24px",fontSize:11,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>
+              <div>Coin</div><div style={{textAlign:"center"}}>Trades</div><div style={{textAlign:"right"}}>Total PnL</div><div style={{textAlign:"right"}}>Avg/Trade</div><div style={{textAlign:"right"}}>Win Rate</div>
+            </div>
+            {stats.coinList.map(([coin,data],i)=>{
+              const wr=data.count?(data.wins/data.count*100).toFixed(0):0;
+              return(
+                <div key={coin} style={{display:"grid",gridTemplateColumns:"1fr 80px 130px 130px 90px",gap:12,padding:"13px 24px",borderTop:"1px solid #F8FAFC",alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.background="#F8FAFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#EFF6FF,#DBEAFE)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:11,color:"#2563EB"}}>{coin.slice(0,3)}</div>
+                    <span style={{fontWeight:700,fontSize:14}}>{coin}</span>
+                  </div>
+                  <div style={{textAlign:"center"}}><Badge type="zero">{data.count}</Badge></div>
+                  <div style={{textAlign:"right",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:data.pnl>=0?"#059669":"#DC2626"}}>{data.pnl>=0?"+":""}{fmt(data.pnl)}</div>
+                  <div style={{textAlign:"right",fontSize:13,color:"#64748B"}}>{fmt(data.pnl/data.count)}</div>
+                  <div style={{textAlign:"right"}}><Badge type={wr>=50?"pos":"neg"}>{wr}%</Badge></div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
-        <ProfileModal
-          profile={profile}
-          onClose={()=>setShowModal(false)}
-          onSave={(name)=>{
+// ── CALCULATOR ────────────────────────────────────────────────
+function CalcPage(){
+  const [dir,setDir]=useState("long");
+  const [entry,setEntry]=useState(65000);const[margin,setMargin]=useState(100);const[leverage,setLeverage]=useState(20);
+  const [tpPct,setTpPct]=useState(150);const[slPct,setSlPct]=useState(50);const[bdtRate,setBdtRate]=useState(110);const[mm,setMm]=useState(0.5);
 
-            setProfile(prev=>({
-              ...prev,
-              full_name:name
-            }));
+  const c=useMemo(()=>{
+    const e=parseFloat(entry),m=parseFloat(margin),lev=parseFloat(leverage),tp=parseFloat(tpPct),sl=parseFloat(slPct),bdt=parseFloat(bdtRate),mmR=parseFloat(mm);
+    if(!e||!m||!lev)return null;
+    const posSize=m*lev,qty=posSize/e,fee=posSize*0.001;
+    const tpPrice=dir==="long"?e*(1+tp/lev/100):e*(1-tp/lev/100);
+    const slPrice=dir==="long"?e*(1-sl/lev/100):e*(1+sl/lev/100);
+    const tpGross=m*(tp/100),tpNet=tpGross-fee,tpRet=(tpNet/m)*100;
+    const slGross=-(m*(sl/100)),slNet=slGross-fee,slRet=(slNet/m)*100;
+    const liqPrice=dir==="long"?e*(1-1/lev+mmR/100):e*(1+1/lev-mmR/100);
+    return{posSize,qty,liqPrice,tpPrice,tpGross,tpNet,tpRet,slPrice,slGross,slNet,slRet,rr:`1 : ${(tp/sl).toFixed(2)}`,bdt};
+  },[dir,entry,margin,leverage,tpPct,slPct,bdtRate,mm]);
 
-            setShowModal(false);
+  const applyRatio=()=>{const s=parseFloat(slPct);if(s>0){setTpPct(parseFloat((s*3).toFixed(1)));return;}const t=parseFloat(tpPct);if(t>0)setSlPct(parseFloat((t/3).toFixed(1)));};
+  const fP=n=>n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:4});
+  const fN=(n,d=2)=>n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:d});
 
-          }}
-        />
+  const Slider=({label,value,onChange,min,max,step=1,format=v=>v,color="#2563EB",unit=""})=>{
+    const [inputVal,setInputVal]=useState(String(value));
+    useEffect(()=>setInputVal(String(value)),[value]);
+    const handleInput=e=>{
+      const v=parseFloat(e.target.value);
+      setInputVal(e.target.value);
+      if(!isNaN(v)&&v>=min&&v<=max)onChange(v);
+    };
+    return(
+    <div style={{marginBottom:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+        <label style={{fontSize:13,fontWeight:600,color:"#475569"}}>{label}</label>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <input type="number" value={inputVal} onChange={handleInput} min={min} max={max} step={step}
+            style={{width:80,padding:"3px 8px",fontSize:13,fontWeight:700,color,border:`1.5px solid ${color}`,borderRadius:7,outline:"none",background:"#fff",textAlign:"center",fontFamily:"'DM Sans',sans-serif"}}/>
+          {unit&&<span style={{fontSize:12,color,fontWeight:700}}>{unit}</span>}
+        </div>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={e=>onChange(parseFloat(e.target.value))}
+        onKeyDown={e=>{if(e.key==="ArrowUp"||e.key==="ArrowRight"){e.preventDefault();onChange(Math.min(max,value+step));}if(e.key==="ArrowDown"||e.key==="ArrowLeft"){e.preventDefault();onChange(Math.max(min,value-step));}}}
+        style={{background:`linear-gradient(to right,${color} ${((value-min)/(max-min))*100}%,#E2E8F0 0%)`,cursor:"pointer"}}/>
+      <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#94A3B8",marginTop:3}}><span>{format(min)}</span><span>{format(max)}</span></div>
+    </div>
+  );};
 
+  return(
+    <div style={{maxWidth:1100,margin:"0 auto",padding:"28px 24px"}}>
+      <div style={{marginBottom:24}}>
+        <div style={{fontFamily:"'Sora',sans-serif",fontSize:24,fontWeight:700}}>⚡ Futures PnL Calculator</div>
+        <div style={{fontSize:13,color:"#94A3B8",marginTop:4}}>Calculate your Binance Futures take profit, stop loss & liquidation prices</div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24}}>
+        <div className="card" style={{padding:"28px"}}>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,marginBottom:22}}>Trade Setup</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:22}}>
+            {["long","short"].map(d=>(
+              <button key={d} onClick={()=>setDir(d)} style={{padding:"12px",borderRadius:10,border:`2px solid ${dir===d?(d==="long"?"#10B981":"#EF4444"):"#E2E8F0"}`,background:dir===d?(d==="long"?"#ECFDF5":"#FEF2F2"):"#fff",color:dir===d?(d==="long"?"#059669":"#DC2626"):"#94A3B8",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,cursor:"pointer",transition:"all 0.2s"}}>
+                {d==="long"?"▲ LONG":"▼ SHORT"}
+              </button>
+            ))}
+          </div>
+          <Slider label="Entry Price (USDT)" value={entry} onChange={setEntry} min={100} max={200000} step={100} format={v=>`$${v.toLocaleString()}`}/>
+          <Slider label="Initial Margin (USDT)" value={margin} onChange={setMargin} min={10} max={10000} step={10} format={v=>`$${v}`}/>
+          <Slider label="Leverage" value={leverage} onChange={setLeverage} min={1} max={125} format={v=>`${v}x`} color="#7C3AED"/>
+          <Slider label="Target PnL % (on Margin)" value={tpPct} onChange={setTpPct} min={1} max={500} format={v=>`${v}%`} color="#10B981"/>
+          <Slider label="Max Loss % (on Margin)" value={slPct} onChange={setSlPct} min={1} max={100} format={v=>`${v}%`} color="#EF4444"/>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:18}}>
+            <div><label style={{fontSize:12,fontWeight:600,color:"#475569",display:"block",marginBottom:6}}>BDT Rate</label><input type="number" value={bdtRate} onChange={e=>setBdtRate(e.target.value)}/></div>
+            <div><label style={{fontSize:12,fontWeight:600,color:"#475569",display:"block",marginBottom:6}}>Maint. Margin %</label><input type="number" value={mm} onChange={e=>setMm(e.target.value)}/></div>
+          </div>
+          <div style={{background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:10,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:13,color:"#92400E",fontWeight:500}}>⚠️ Recommended R:R = 1:3</span>
+            <button onClick={applyRatio} style={{background:"#F59E0B",color:"#fff",border:"none",padding:"6px 14px",borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:12,fontFamily:"'DM Sans',sans-serif"}}>Auto Fix</button>
+          </div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          <div className="card" style={{padding:"22px"}}>
+            <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,marginBottom:16}}>Position Summary</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              {[["Direction",<Badge type={dir==="long"?"long":"short"}>{dir==="long"?"▲ LONG":"▼ SHORT"}</Badge>],["Position Size",c?`$${fN(c.posSize)}`:"—"],["Quantity",c?`${fN(c.qty,6)} coins`:"—"],["Risk/Reward",c?c.rr:"—"]].map(([l,v])=>(
+                <div key={l} style={{background:"#F8FAFC",borderRadius:10,padding:"12px 14px"}}>
+                  <div style={{fontSize:10,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:4}}>{l}</div>
+                  <div style={{fontWeight:700,fontSize:14}}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:"#FEF2F2",border:"1px solid #FECACA",borderRadius:10,padding:"12px 16px",marginTop:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:13,color:"#DC2626",fontWeight:600}}>💧 Liquidation Price</span>
+              <span style={{fontFamily:"'Sora',sans-serif",fontSize:18,fontWeight:700,color:"#DC2626"}}>${fP(c?.liqPrice)}</span>
+            </div>
+          </div>
+          <div className="card" style={{padding:"22px",borderLeft:"4px solid #10B981"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:"#059669"}}>🎯 Take Profit</div>
+              <Badge type="pos">{c?`${(tpPct/leverage).toFixed(3)}% move`:""}</Badge>
+            </div>
+            <div style={{background:"linear-gradient(135deg,#ECFDF5,#D1FAE5)",borderRadius:10,padding:"14px",marginBottom:12,textAlign:"center"}}>
+              <div style={{fontSize:11,color:"#059669",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>Set This Price on Binance</div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontSize:24,fontWeight:700,color:"#059669",marginTop:4}}>${fP(c?.tpPrice)}</div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+              {[["Gross",c?.tpGross!=null?`+${fmt(c.tpGross)}`:"—","#059669"],["Net (fees)",c?.tpNet!=null?`+${fmt(c.tpNet)}`:"—","#059669"],["Return",c?.tpRet!=null?`+${fN(c.tpRet)}%`:"—","#059669"]].map(([l,v,col])=>(
+                <div key={l} style={{textAlign:"center"}}><div style={{fontSize:10,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",marginBottom:3}}>{l}</div><div style={{fontWeight:700,fontSize:13,color:col}}>{v}</div></div>
+              ))}
+            </div>
+            {c?.tpNet&&<div style={{fontSize:11,color:"#94A3B8",textAlign:"center",marginTop:8}}>≈ {fN(c.tpNet*bdtRate)} BDT</div>}
+          </div>
+          <div className="card" style={{padding:"22px",borderLeft:"4px solid #EF4444"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:"#DC2626"}}>🛑 Stop Loss</div>
+              <Badge type="neg">{c?`${(slPct/leverage).toFixed(3)}% move`:""}</Badge>
+            </div>
+            <div style={{background:"linear-gradient(135deg,#FEF2F2,#FEE2E2)",borderRadius:10,padding:"14px",marginBottom:12,textAlign:"center"}}>
+              <div style={{fontSize:11,color:"#DC2626",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>Set This Price on Binance</div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontSize:24,fontWeight:700,color:"#DC2626",marginTop:4}}>${fP(c?.slPrice)}</div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+              {[["Gross",c?.slGross!=null?fmt(c.slGross):"—","#DC2626"],["Net (fees)",c?.slNet!=null?fmt(c.slNet):"—","#DC2626"],["Return",c?.slRet!=null?`${fN(c.slRet)}%`:"—","#DC2626"]].map(([l,v,col])=>(
+                <div key={l} style={{textAlign:"center"}}><div style={{fontSize:10,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",marginBottom:3}}>{l}</div><div style={{fontWeight:700,fontSize:13,color:col}}>{v}</div></div>
+              ))}
+            </div>
+            {c?.slNet&&<div style={{fontSize:11,color:"#94A3B8",textAlign:"center",marginTop:8}}>≈ {fN(c.slNet*bdtRate)} BDT</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+function Dashboard(){
+  const [trades,setTrades]=useState([]);const[startCap,setStartCap]=useState(10000);
+  const [capEdit,setCapEdit]=useState(false);const[capInput,setCapInput]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [date,setDate]=useState(todayStr());const[ticker,setTicker]=useState("");
+  const [direction,setDirection]=useState("long");const[result,setResult]=useState("");
+  const [formError,setFormError]=useState("");const[saving,setSaving]=useState(false);
+  const [expandedDay,setExpandedDay]=useState(null);const[activeTab,setActiveTab]=useState("log");
+  const usedCoins=useMemo(()=>[...new Set(trades.map(t=>t.ticker).filter(Boolean))],[trades]);
+
+  const fetchData=useCallback(async()=>{
+    setLoading(true);
+    try{const tok=getToken();const[td,sd]=await Promise.all([dbFetch("/rest/v1/trades?select=*&order=date.desc,created_at.desc","GET",null,tok),dbFetch("/rest/v1/user_settings?select=*","GET",null,tok)]);setTrades(td||[]);if(sd?.length>0)setStartCap(parseFloat(sd[0].starting_capital));}
+    catch(e){console.error(e);}finally{setLoading(false);}
+  },[]);
+  useEffect(()=>{fetchData();},[fetchData]);
+
+  const addTrade=async()=>{
+    const r=parseFloat(result);if(isNaN(r)){setFormError("Enter a valid result.");return;}if(!ticker.trim()){setFormError("Enter a ticker.");return;}
+    setFormError("");setSaving(true);
+    try{const tok=getToken(),uid=getUID();const row=await dbFetch("/rest/v1/trades","POST",{user_id:uid,date,ticker:ticker.trim().toUpperCase(),result:r,note:direction},tok,{"Prefer":"return=representation"});setTrades(prev=>[row[0],...prev]);setTicker("");setResult("");}
+    catch(e){setFormError(e.message);}finally{setSaving(false);}
+  };
+
+  const deleteTrade=async(id)=>{try{await dbFetch(`/rest/v1/trades?id=eq.${id}`,"DELETE",null,getToken());setTrades(prev=>prev.filter(t=>t.id!==id));}catch(e){alert("Delete failed: "+e.message);}};
+
+  const saveCapital=async()=>{
+    const v=parseFloat(capInput);if(isNaN(v)||v<=0)return;
+    try{const uid=getUID();await upsert("user_settings",{user_id:uid,starting_capital:v},getToken());setStartCap(v);setCapEdit(false);}
+    catch(e){alert("Could not save: "+e.message);}
+  };
+
+  const downloadCSV=()=>{
+    const rows=[["Date","Ticker","Direction","Result ($)"]];
+    [...trades].sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>rows.push([t.date,t.ticker||"",t.note||"",t.result]));
+    const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=url;a.download=`tradelog_${todayStr()}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  };
+
+  const days=useMemo(()=>{const map={};trades.forEach(t=>{if(!map[t.date])map[t.date]={date:t.date,trades:[],total:0};map[t.date].trades.push(t);map[t.date].total+=parseFloat(t.result);});return Object.values(map).sort((a,b)=>b.date.localeCompare(a.date));},[trades]);
+  const totalPNL=days.reduce((s,d)=>s+d.total,0);
+  const currentCap=startCap+totalPNL,capPct=((currentCap-startCap)/startCap*100);
+  const winDays=days.filter(d=>d.total>0).length,lossDays=days.filter(d=>d.total<0).length;
+  const winRate=days.length?(winDays/days.length*100).toFixed(1):"0.0";
+  const best=days.length?Math.max(...days.map(d=>d.total)):0,worst=days.length?Math.min(...days.map(d=>d.total)):0;
+  const monthlyData=useMemo(()=>{const map={};trades.forEach(t=>{const m=t.date.slice(0,7);if(!map[m])map[m]={month:m,total:0,count:0};map[m].total+=parseFloat(t.result);map[m].count++;});return Object.values(map).sort((a,b)=>a.month.localeCompare(b.month)).slice(-12);},[trades]);
+  const maxAbsMonth=Math.max(...monthlyData.map(d=>Math.abs(d.total)),1);
+
+  return(
+    <div style={{maxWidth:1060,margin:"0 auto",padding:"24px",display:"flex",flexDirection:"column",gap:20}}>
+      {/* Stats */}
+      <div style={{display:"grid",gridTemplateColumns:"1.4fr 1fr 1fr 1fr",gap:16}} className="fade-up">
+        <div className="card" style={{padding:"24px",background:"linear-gradient(135deg,#1D4ED8,#2563EB)",color:"#fff"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+            <div><div style={{fontSize:11,fontWeight:600,textTransform:"uppercase",letterSpacing:0.8,opacity:0.7,marginBottom:6}}>Current Capital</div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontSize:30,fontWeight:700,letterSpacing:"-1px"}}>{fmt(currentCap)}</div></div>
+            <div style={{width:44,height:44,borderRadius:12,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>💰</div>
+          </div>
+          <div style={{marginBottom:14}}><span style={{background:capPct>=0?"rgba(16,185,129,0.2)":"rgba(239,68,68,0.2)",color:capPct>=0?"#6EE7B7":"#FCA5A5",borderRadius:6,padding:"3px 10px",fontSize:12,fontWeight:700}}>{capPct>=0?"▲":"▼"} {Math.abs(capPct).toFixed(2)}%</span></div>
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.15)",paddingTop:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontSize:10,opacity:0.5,textTransform:"uppercase"}}>Starting</div><div style={{fontWeight:700,fontSize:15,marginTop:2}}>{fmt(startCap)}</div></div>
+            {!capEdit?<button onClick={()=>{setCapEdit(true);setCapInput(startCap.toString());}} style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:11,fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>Edit</button>:
+            <div style={{display:"flex",gap:6}}><input type="number" value={capInput} onChange={e=>setCapInput(e.target.value)} style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.25)",color:"#fff",width:90,borderRadius:8,padding:"6px 10px",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13}}/><button onClick={saveCapital} style={{background:"#fff",color:"#1D4ED8",border:"none",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12}}>Save</button><button onClick={()=>setCapEdit(false)} style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#fff",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:11,fontFamily:"'DM Sans',sans-serif"}}>✕</button></div>}
+          </div>
+        </div>
+        {[["📈","Total PNL",`${totalPNL>=0?"+":""}${fmt(totalPNL)}`,`${trades.length} trades · ${days.length} days`,totalPNL>=0?"#059669":"#DC2626"],
+          ["🎯","Day Win Rate",`${winRate}%`,`▲ ${winDays}W  ▼ ${lossDays}L`,"#2563EB"],
+          ["⚡","Best Day",fmt(best),`Worst: ${fmt(worst)}`,"#059669"]].map(([icon,label,value,sub,color])=>(
+          <div key={label} className="card" style={{padding:"22px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:12}}><span style={{fontSize:11,fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,color:"#94A3B8"}}>{label}</span><span style={{fontSize:22}}>{icon}</span></div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:24,fontWeight:700,color,marginBottom:6}}>{value}</div>
+            <div style={{fontSize:12,color:"#94A3B8"}}>{sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Log Trade */}
+      <div className="card fade-up" style={{padding:"22px 24px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16}}>Log a Trade</div>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            {formError&&<span style={{fontSize:12,color:"#DC2626",fontWeight:600}}>{formError}</span>}
+            <button onClick={downloadCSV} style={{background:"#F8FAFC",border:"1px solid #E2E8F0",color:"#2563EB",borderRadius:9,padding:"8px 16px",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700}}>⬇ CSV</button>
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"130px 1fr 160px 140px auto",gap:12,alignItems:"flex-end"}}>
+          <div><label style={{fontSize:11,fontWeight:600,color:"#64748B",textTransform:"uppercase",letterSpacing:0.5,display:"block",marginBottom:6}}>Date</label><input type="date" value={date} onChange={e=>setDate(e.target.value)}/></div>
+          <div><label style={{fontSize:11,fontWeight:600,color:"#64748B",textTransform:"uppercase",letterSpacing:0.5,display:"block",marginBottom:6}}>Ticker</label><CoinInput value={ticker} onChange={setTicker} usedCoins={usedCoins}/></div>
+          <div><label style={{fontSize:11,fontWeight:600,color:"#64748B",textTransform:"uppercase",letterSpacing:0.5,display:"block",marginBottom:6}}>Direction</label>
+            <select value={direction} onChange={e=>setDirection(e.target.value)} style={{color:direction==="long"?"#059669":"#DC2626",fontWeight:700}}>
+              <option value="long">▲ LONG</option><option value="short">▼ SHORT</option>
+            </select>
+          </div>
+          <div><label style={{fontSize:11,fontWeight:600,color:"#64748B",textTransform:"uppercase",letterSpacing:0.5,display:"block",marginBottom:6}}>Result ($)</label><input type="number" placeholder="120 or -45" value={result} onChange={e=>setResult(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTrade()}/></div>
+          <button onClick={addTrade} disabled={saving} style={{background:saving?"#93C5FD":"linear-gradient(135deg,#2563EB,#1D4ED8)",color:"#fff",border:"none",borderRadius:10,padding:"12px 20px",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:14,cursor:saving?"not-allowed":"pointer",boxShadow:"0 4px 12px rgba(37,99,235,0.25)",whiteSpace:"nowrap"}}>
+            {saving?"Saving…":"+ Add Trade"}
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{display:"flex",gap:6}}>
+        {[["log","📋 Daily Log"],["chart","📊 Monthly Chart"]].map(([t,label])=>(
+          <button key={t} onClick={()=>setActiveTab(t)} style={{padding:"9px 18px",borderRadius:10,border:"none",fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:13,cursor:"pointer",background:activeTab===t?"#2563EB":"#fff",color:activeTab===t?"#fff":"#64748B",boxShadow:activeTab===t?"0 4px 12px rgba(37,99,235,0.2)":"0 1px 3px rgba(0,0,0,0.06)"}}>{label}</button>
+        ))}
+      </div>
+
+      {activeTab==="chart"&&(
+        <div className="card fade-up" style={{padding:"24px"}}>
+          <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:17,marginBottom:4}}>Monthly PNL Overview</div>
+          <div style={{fontSize:13,color:"#94A3B8",marginBottom:22}}>Last {monthlyData.length} months</div>
+          {monthlyData.length===0?<div style={{textAlign:"center",color:"#94A3B8",padding:"40px 0"}}>No data yet.</div>:(
+            <>
+              <div style={{display:"flex",alignItems:"flex-end",gap:10,height:180,marginBottom:16}}>
+                {monthlyData.map(d=>{const pos=d.total>=0,h=Math.max(10,(Math.abs(d.total)/maxAbsMonth)*160);return(
+                  <div key={d.month} title={`${fmtMonth(d.month)}: ${fmt(d.total)}`} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%",gap:5}}>
+                    <div style={{fontSize:10,color:pos?"#059669":"#DC2626",fontWeight:700,whiteSpace:"nowrap"}}>{fmtShort(d.total)}</div>
+                    <div style={{width:"100%",height:h,borderRadius:pos?"8px 8px 3px 3px":"3px 3px 8px 8px",background:pos?"linear-gradient(180deg,#34D399,#10B981)":"linear-gradient(0deg,#F87171,#EF4444)",boxShadow:pos?"0 4px 12px rgba(16,185,129,0.2)":"0 4px 12px rgba(239,68,68,0.15)"}}/>
+                    <div style={{fontSize:10,color:"#94A3B8"}}>{fmtMonth(d.month)}</div>
+                  </div>);})}
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+                {monthlyData.slice(-3).reverse().map(d=>(
+                  <div key={d.month} style={{background:d.total>=0?"#ECFDF5":"#FEF2F2",borderRadius:12,padding:"14px 16px",border:`1px solid ${d.total>=0?"#A7F3D0":"#FECACA"}`}}>
+                    <div style={{fontSize:12,color:"#94A3B8",fontWeight:600,marginBottom:4}}>{fmtMonth(d.month)}</div>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:d.total>=0?"#059669":"#DC2626"}}>{d.total>=0?"+":""}{fmt(d.total)}</div>
+                    <div style={{fontSize:11,color:"#94A3B8",marginTop:2}}>{d.count} trades</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       )}
 
+      {activeTab==="log"&&(
+        <div className="fade-up" style={{display:"flex",flexDirection:"column",gap:10}}>
+          {loading&&<div style={{textAlign:"center",padding:"40px",color:"#94A3B8"}}>Loading trades…</div>}
+          {!loading&&days.length===0&&<div className="card" style={{padding:"52px",textAlign:"center",color:"#94A3B8"}}>No trades yet. Log your first trade above! 🚀</div>}
+          {!loading&&days.map(day=>(
+            <div key={day.date} className="card" style={{overflow:"hidden",cursor:"pointer"}} onClick={()=>setExpandedDay(expandedDay===day.date?null:day.date)}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:16,alignItems:"center",padding:"16px 22px"}}>
+                <div>
+                  <div style={{fontWeight:700,fontSize:15}}>{fmtDate(day.date)}</div>
+                  <div style={{fontSize:12,color:"#94A3B8",marginTop:3}}>{day.trades.length} trade{day.trades.length!==1?"s":""} · {day.trades.map(t=>t.ticker).filter(Boolean).slice(0,3).join(", ")}</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:10,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5,marginBottom:4}}>Day PNL</div>
+                  <Badge type={day.total>0?"pos":day.total<0?"neg":"zero"}>{day.total>0?"+":""}{fmt(day.total)}</Badge>
+                </div>
+                <div style={{width:32,height:32,borderRadius:"50%",background:"#F1F5F9",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"#94A3B8",transition:"transform 0.2s",transform:expandedDay===day.date?"rotate(180deg)":"none"}}>▾</div>
+              </div>
+              {expandedDay===day.date&&(
+                <div style={{background:"#F8FAFC",borderTop:"1px solid #F1F5F9",padding:"8px 22px 16px"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 100px 140px 60px",gap:12,padding:"8px 14px",fontSize:10,color:"#94A3B8",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>
+                    <div>Ticker</div><div>Direction</div><div>Result</div><div></div>
+                  </div>
+                  {day.trades.map(t=>(
+                    <div key={t.id} onClick={e=>e.stopPropagation()} style={{display:"grid",gridTemplateColumns:"1fr 100px 140px 60px",gap:12,alignItems:"center",background:"#fff",border:"1px solid #E2E8F0",borderRadius:10,padding:"12px 14px",marginBottom:6,fontSize:13}}>
+                      <div style={{fontWeight:700,color:"#2563EB",fontSize:14}}>{t.ticker||"—"}</div>
+                      <Badge type={t.note==="long"?"long":"short"}>{t.note==="long"?"▲ LONG":"▼ SHORT"}</Badge>
+                      <Badge type={parseFloat(t.result)>0?"pos":parseFloat(t.result)<0?"neg":"zero"}>{parseFloat(t.result)>0?"+":""}{fmt(t.result)}</Badge>
+                      <button onClick={()=>deleteTrade(t.id)} style={{background:"none",border:"1px solid #E2E8F0",color:"#94A3B8",borderRadius:7,padding:"5px 10px",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif"}} onMouseEnter={e=>{e.target.style.borderColor="#EF4444";e.target.style.color="#EF4444";}} onMouseLeave={e=>{e.target.style.borderColor="#E2E8F0";e.target.style.color="#94A3B8";}}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-  )
+  );
 }
 
+// ── ROOT ──────────────────────────────────────────────────────
 function App(){
+  const [token,setToken]=useState(()=>localStorage.getItem("tl_token")||null);
+  const [profile,setProfile]=useState(null);
+  const [trades,setTrades]=useState([]);
+  const [page,setPage]=useState("dashboard");
 
-  const[loggedIn,setLoggedIn] = useState(false);
+  const onLogin=(tok)=>{localStorage.setItem("tl_token",tok);setToken(tok);};
+  const onLogout=()=>{localStorage.removeItem("tl_token");localStorage.removeItem("tl_refresh");setToken(null);setProfile(null);setPage("dashboard");};
 
-  if(!loggedIn){
-    return(
-      <LoginPage
-        onLogin={()=>setLoggedIn(true)}
-      />
-    )
-  }
+  useEffect(()=>{
+    if(!token)return;
+    const tok=getToken();
+    Promise.all([dbFetch("/rest/v1/profiles?select=*","GET",null,tok),dbFetch("/rest/v1/trades?select=*&order=date.desc","GET",null,tok)])
+      .then(([p,t])=>{if(p?.length>0)setProfile(p[0]);setTrades(t||[]);}).catch(()=>{});
+  },[token]);
 
-  return <Dashboard/>
+  const initials=profile?.full_name?profile.full_name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"?";
+  const displayName=profile?.full_name||"Trader";
+  const bdayStr=profile?.birthday?new Date(profile.birthday+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
+
+  if(!token)return<AuthScreen onLogin={onLogin}/>;
+
+  return(
+    <div style={{minHeight:"100vh",background:"#F8FAFC",fontFamily:"'DM Sans',sans-serif",display:"flex",flexDirection:"column"}}>
+      {/* Navbar */}
+      <div style={{background:"#fff",borderBottom:"1px solid #E2E8F0",position:"sticky",top:0,zIndex:100,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
+        <div style={{maxWidth:1060,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",height:62,gap:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:9,flexShrink:0}}>
+            <div style={{width:34,height:34,background:"linear-gradient(135deg,#2563EB,#1D4ED8)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,color:"#fff"}}>◈</div>
+            <span style={{fontFamily:"'Sora',sans-serif",fontSize:19,fontWeight:700,color:"#0F172A"}}>TradeLog</span>
+          </div>
+          <div style={{display:"flex",gap:4,flex:1,justifyContent:"center"}}>
+            {[["dashboard","📋 Dashboard"],["calculator","⚡ Calculator"],["profile","👤 Profile"]].map(([p,label])=>(
+              <button key={p} onClick={()=>setPage(p)} style={{padding:"8px 16px",borderRadius:9,border:"none",fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:13,cursor:"pointer",background:page===p?"#EFF6FF":"none",color:page===p?"#2563EB":"#64748B",boxShadow:page===p?"inset 0 0 0 1.5px #BFDBFE":"none"}}>{label}</button>
+            ))}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0,cursor:"pointer"}} onClick={()=>setPage("profile")}>
+            <div style={{width:36,height:36,borderRadius:"50%",border:"2px solid #BFDBFE",overflow:"hidden",background:"linear-gradient(135deg,#2563EB,#1D4ED8)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:13,flexShrink:0}}>
+              {profile?.avatar_url?<img src={profile.avatar_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span>{initials}</span>}
+            </div>
+            <div>
+              <div style={{fontWeight:700,fontSize:13,color:"#0F172A"}}>{displayName}</div>
+              {bdayStr&&<div style={{fontSize:10,color:"#94A3B8"}}>🎂 {bdayStr}</div>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Page Content */}
+      <div style={{flex:1}}>
+        {page==="dashboard"&&<Dashboard/>}
+        {page==="calculator"&&<CalcPage/>}
+        {page==="profile"&&<ProfilePage profile={profile} setProfile={setProfile} trades={trades} onLogout={onLogout}/>}
+      </div>
+
+      <Footer/>
+    </div>
+  );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
-
 </body>
 </html>
