@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="TradeLog - Track every trade, grow every day"/>
-  <meta name="theme-color" content="#2563EB"/>
   <title>TradeLog</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --blue:#2563EB; --blue-dark:#1D4ED8; --blue-light:#EFF6FF; --blue-mid:#DBEAFE;
       --green:#10B981; --green-light:#ECFDF5; --green-dark:#059669;
@@ -21,415 +21,350 @@
       --gray-50:#F8FAFC; --gray-100:#F1F5F9; --gray-200:#E2E8F0;
       --gray-300:#CBD5E1; --gray-400:#94A3B8; --gray-500:#64748B;
       --gray-600:#475569; --gray-700:#334155; --gray-800:#1E293B; --gray-900:#0F172A;
-      --white:#FFFFFF;
-      --shadow-xs:0 1px 2px rgba(0,0,0,0.05);
-      --shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
-      --shadow-md:0 4px 6px rgba(0,0,0,0.05),0 2px 4px rgba(0,0,0,0.03);
-      --shadow-lg:0 10px 25px rgba(0,0,0,0.08);
-      --radius-sm:8px; --radius:12px; --radius-lg:16px; --radius-xl:20px;
-      --navbar-h:60px;
-      --transition:0.18s ease;
     }
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    html { scroll-behavior:smooth; }
-    body { font-family:'DM Sans',sans-serif; background:var(--gray-50); color:var(--gray-900); -webkit-font-smoothing:antialiased; font-size:15px; line-height:1.5; }
-    ::-webkit-scrollbar { width:5px; height:5px; }
-    ::-webkit-scrollbar-track { background:transparent; }
-    ::-webkit-scrollbar-thumb { background:var(--gray-300); border-radius:10px; }
-    /* Focus for accessibility */
-    :focus-visible { outline:2px solid var(--blue); outline-offset:2px; border-radius:4px; }
-    /* Form elements */
-    input, select, textarea, button { font-family:'DM Sans',sans-serif; }
-    input[type=text], input[type=number], input[type=date], input[type=email], input[type=password] {
-      background:var(--gray-50); border:1.5px solid var(--gray-200); border-radius:var(--radius-sm);
-      color:var(--gray-900); font-size:14px; padding:10px 13px; width:100%; outline:none;
-      transition:border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    html, body { height: 100%; }
+    body { font-family:'DM Sans',sans-serif; background:var(--gray-50); color:var(--gray-900); -webkit-font-smoothing:antialiased; }
+    #root { min-height: 100vh; display: flex; flex-direction: column; }
+    ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:var(--gray-300); border-radius:4px; }
+    input[type=text],input[type=number],input[type=date],input[type=email],input[type=password] {
+      background:var(--gray-50); border:1.5px solid var(--gray-200); border-radius:9px;
+      color:var(--gray-900); font-family:'DM Sans',sans-serif; font-size:14px; padding:10px 13px; width:100%; outline:none; transition:all 0.18s;
     }
-    input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,0.1); background:var(--white); }
+    input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,0.1); background:#fff; }
     input::placeholder { color:var(--gray-400); font-size:13px; }
-    input:disabled { opacity:0.5; cursor:not-allowed; }
-    select { background:var(--gray-50); border:1.5px solid var(--gray-200); border-radius:var(--radius-sm); color:var(--gray-900); font-size:14px; padding:10px 13px; width:100%; outline:none; cursor:pointer; transition:border-color var(--transition); }
+    select { background:var(--gray-50); border:1.5px solid var(--gray-200); border-radius:9px; color:var(--gray-900); font-family:'DM Sans',sans-serif; font-size:14px; padding:10px 13px; width:100%; outline:none; cursor:pointer; }
     select:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
-    input[type=range] { -webkit-appearance:none; width:100%; height:5px; border-radius:3px; background:var(--gray-200); outline:none; cursor:pointer; }
+    input[type=range] { -webkit-appearance:none; width:100%; height:5px; border-radius:3px; background:var(--gray-200); outline:none; cursor:pointer; border:none; }
     input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--blue); cursor:pointer; box-shadow:0 1px 6px rgba(37,99,235,0.35); }
-    input[type=range]:focus { box-shadow:none; }
-    /* Animations */
-    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-    @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.03); } }
-    @keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
-    .fade-up { animation:fadeUp 0.35s ease both; }
-    .fade-in { animation:fadeIn 0.25s ease both; }
-    /* Cards */
-    .card { background:var(--white); border-radius:var(--radius-lg); border:1px solid var(--gray-200); box-shadow:var(--shadow-sm); }
-    .card-hover { transition:box-shadow var(--transition), border-color var(--transition), transform var(--transition); }
-    .card-hover:hover { box-shadow:var(--shadow-lg); border-color:var(--gray-300); }
-    /* Buttons */
-    .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; font-family:'DM Sans',sans-serif; font-weight:600; font-size:14px; border:none; border-radius:var(--radius-sm); cursor:pointer; transition:all var(--transition); padding:10px 18px; white-space:nowrap; }
-    .btn:disabled { opacity:0.55; cursor:not-allowed; transform:none !important; }
-    .btn-primary { background:linear-gradient(135deg,var(--blue),var(--blue-dark)); color:var(--white); box-shadow:0 2px 8px rgba(37,99,235,0.22); }
-    .btn-primary:hover:not(:disabled) { opacity:0.92; transform:translateY(-1px); box-shadow:0 4px 14px rgba(37,99,235,0.3); }
-    .btn-secondary { background:var(--gray-100); color:var(--gray-700); }
-    .btn-secondary:hover:not(:disabled) { background:var(--gray-200); }
-    .btn-outline { background:var(--white); color:var(--blue); border:1.5px solid var(--blue-mid); }
-    .btn-outline:hover:not(:disabled) { background:var(--blue-light); }
-    .btn-danger { background:var(--red-light); color:var(--red-dark); border:1px solid #FECACA; }
-    .btn-danger:hover:not(:disabled) { background:#FEE2E2; }
+    .card { background:#fff; border-radius:14px; border:1px solid var(--gray-200); box-shadow:0 1px 6px rgba(0,0,0,0.05); }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:5px; font-family:'DM Sans',sans-serif; font-weight:600; font-size:14px; border:none; border-radius:9px; cursor:pointer; transition:all 0.15s; padding:9px 16px; white-space:nowrap; }
+    .btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn-blue { background:linear-gradient(135deg,var(--blue),var(--blue-dark)); color:#fff; box-shadow:0 2px 8px rgba(37,99,235,0.2); }
+    .btn-blue:hover:not(:disabled) { opacity:0.9; transform:translateY(-1px); }
     .btn-ghost { background:transparent; color:var(--gray-500); border:1px solid var(--gray-200); }
-    .btn-ghost:hover:not(:disabled) { background:var(--gray-100); color:var(--gray-700); }
-    .btn-sm { padding:7px 13px; font-size:13px; }
-    .btn-lg { padding:13px 24px; font-size:15px; border-radius:var(--radius); }
-    .btn-icon { padding:8px; border-radius:50%; }
-    /* Badges */
-    .badge { display:inline-flex; align-items:center; border-radius:6px; padding:2px 9px; font-size:12px; font-weight:700; }
-    .badge-pos { background:#DCFCE7; color:#15803D; }
-    .badge-neg { background:#FEE2E2; color:#B91C1C; }
-    .badge-zero { background:var(--gray-100); color:var(--gray-500); }
-    .badge-long { background:#DBEAFE; color:#1D4ED8; }
-    .badge-short { background:#FED7AA; color:#C2410C; }
-    .badge-info { background:var(--blue-light); color:var(--blue-dark); }
-    /* Nav */
-    .nav-btn { padding:7px 13px; border-radius:var(--radius-sm); border:none; font-weight:600; font-size:13px; cursor:pointer; transition:all var(--transition); background:transparent; color:var(--gray-500); }
+    .btn-ghost:hover:not(:disabled) { background:var(--gray-100); }
+    .badge { display:inline-flex; align-items:center; border-radius:5px; padding:2px 8px; font-size:12px; font-weight:700; }
+    .bp { background:#DCFCE7; color:#15803D; }
+    .bn { background:#FEE2E2; color:#B91C1C; }
+    .bz { background:var(--gray-100); color:var(--gray-500); }
+    .bl { background:#DBEAFE; color:#1D4ED8; }
+    .bs { background:#FED7AA; color:#C2410C; }
+    .nav-btn { padding:7px 12px; border-radius:8px; border:none; font-weight:600; font-size:13px; cursor:pointer; transition:all 0.15s; background:transparent; color:var(--gray-500); font-family:'DM Sans',sans-serif; }
     .nav-btn:hover { background:var(--gray-100); color:var(--blue); }
-    .nav-btn.active { background:var(--blue-light); color:var(--blue); box-shadow:inset 0 0 0 1.5px var(--blue-mid); }
-    /* Form label */
-    .form-label { font-size:11px; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:5px; }
-    /* Alert / toast */
-    .toast { position:fixed; top:72px; left:50%; transform:translateX(-50%); z-index:1000; min-width:300px; max-width:90vw; border-radius:var(--radius); padding:14px 18px; box-shadow:var(--shadow-lg); display:flex; align-items:flex-start; gap:12px; animation:slideDown 0.3s ease; }
-    .toast-success { background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; }
-    .toast-warning { background:#FFFBEB; border:1px solid #FDE68A; color:#78350F; }
-    .toast-error { background:var(--red-light); border:1px solid #FECACA; color:#991B1B; }
-    .toast-info { background:var(--blue-light); border:1px solid var(--blue-mid); color:var(--blue-dark); }
-    /* Skeleton loader */
-    .skeleton { background:linear-gradient(90deg,var(--gray-100) 25%,var(--gray-200) 50%,var(--gray-100) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:var(--radius-sm); }
-    /* Day row */
-    .day-row { background:var(--white); border:1.5px solid var(--gray-200); border-radius:var(--radius-lg); overflow:hidden; cursor:pointer; transition:border-color var(--transition), box-shadow var(--transition); }
-    .day-row:hover { border-color:#93C5FD; box-shadow:0 2px 12px rgba(37,99,235,0.07); }
-    /* Responsive grid */
-    .grid-auto { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
-    /* Notification dot */
-    .notif-dot { width:9px; height:9px; border-radius:50%; background:var(--red); position:absolute; top:-1px; right:-1px; border:2px solid var(--white); }
-    /* Mobile */
-    @media (max-width:768px) {
-      :root { --navbar-h:54px; }
-      .hide-sm { display:none !important; }
-      .calc-grid { grid-template-columns:1fr !important; }
-      .stats-grid { grid-template-columns:1fr 1fr !important; }
-      .form-grid { grid-template-columns:1fr 1fr !important; }
-      .coin-grid { grid-template-columns:1fr auto auto !important; }
-      .auth-split { flex-direction:column !important; }
-      .auth-left-panel { display:none !important; }
-      .page-wrap { padding:14px !important; }
-      .profile-grid { grid-template-columns:1fr !important; }
-      .hero-stats { grid-template-columns:1fr 1fr !important; }
+    .nav-btn.active { background:var(--blue-light); color:var(--blue); }
+    .flabel { font-size:10px; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:5px; }
+    .day-row { background:#fff; border:1.5px solid var(--gray-200); border-radius:13px; overflow:hidden; cursor:pointer; transition:border-color 0.15s, box-shadow 0.15s; }
+    .day-row:hover { border-color:#93C5FD; box-shadow:0 2px 10px rgba(37,99,235,0.07); }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes spinR { to { transform:rotate(360deg); } }
+    .fade-up { animation:fadeUp 0.3s ease both; }
+    .toast-wrap { position:fixed; top:68px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; align-items:center; width:min(420px,94vw); pointer-events:none; }
+    .toast { border-radius:12px; padding:13px 16px; box-shadow:0 6px 24px rgba(0,0,0,0.1); display:flex; align-items:flex-start; gap:10px; animation:slideDown 0.3s ease; pointer-events:all; width:100%; }
+    .t-success { background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; }
+    .t-warning { background:#FFFBEB; border:1px solid #FDE68A; color:#78350F; }
+    .t-error { background:var(--red-light); border:1px solid #FECACA; color:#991B1B; }
+    .t-info { background:var(--blue-light); border:1px solid var(--blue-mid); color:var(--blue-dark); }
+    /* Responsive */
+    @media(max-width:768px) {
+      .hide-mob { display:none !important; }
+      .calc-cols { grid-template-columns:1fr !important; }
+      .stats-cols { grid-template-columns:1fr 1fr !important; }
+      .form-cols { grid-template-columns:1fr 1fr !important; }
+      .profile-cols { grid-template-columns:1fr !important; }
+      .auth-left { display:none !important; }
+      .pg { padding:14px !important; }
     }
-    @media (max-width:480px) {
-      .stats-grid { grid-template-columns:1fr !important; }
-      .form-grid { grid-template-columns:1fr !important; }
-      .hero-stats { grid-template-columns:1fr 1fr !important; }
-      .toast { min-width:unset; width:92vw; }
+    @media(max-width:480px) {
+      .stats-cols { grid-template-columns:1fr !important; }
+      .form-cols { grid-template-columns:1fr !important; }
+      .stat-grid { grid-template-columns:1fr 1fr !important; }
     }
+    @media(min-width:769px) { .show-mob { display:none !important; } }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-"use strict";
-const {useState,useMemo,useEffect,useCallback,useRef,createContext,useContext}=React;
+const {useState,useMemo,useEffect,useCallback,useRef} = React;
 
-/* ─── CONFIG ─────────────────────────────────────────────── */
-const CFG={
-  SUPABASE_URL:"https://mhbumikrwpwrayedozec.supabase.co",
-  SUPABASE_KEY:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oYnVtaWtyd3B3cmF5ZWRvemVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzUwMzEsImV4cCI6MjA5MzcxMTAzMX0.zXshcM476oUJ3-UhKpiRbaQDDvhoAr1rLG3EpBAlrAo",
-  MAX_AVATAR_BYTES:500*1024,
-  GAIN_NOTIF_PCT:20,
-  LOSS_NOTIF_PCT:10,
-};
-const COINS=["BTC","ETH","BNB","SOL","XRP","ADA","DOGE","AVAX","DOT","MATIC","LINK","LTC","UNI","ATOM","TRX","NEAR","APT","OP","ARB","INJ","TIA","SUI","SEI","JUP","WIF","BONK","PEPE","SHIB","FET","RNDR","GRT","SAND","MANA","AXS","GALA","IMX","ALGO","ICP","FIL","EOS","XLM","VET","HBAR","AAVE","MKR","COMP","CRV","SUSHI","ZEC","XMR","ETC","BCH"];
+/* ── CONFIG ─────────────────────────────────────────── */
+const SUPABASE_URL = "https://mhbumikrwpwrayedozec.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oYnVtaWtyd3B3cmF5ZWRvemVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzUwMzEsImV4cCI6MjA5MzcxMTAzMX0.zXshcM476oUJ3-UhKpiRbaQDDvhoAr1rLG3EpBAlrAo";
+const MAX_AVATAR = 500 * 1024;
+const GAIN_PCT = 20;
+const LOSS_PCT = 10;
+const COINS = ["BTC","ETH","BNB","SOL","XRP","ADA","DOGE","AVAX","DOT","MATIC","LINK","LTC","UNI","ATOM","TRX","NEAR","APT","OP","ARB","INJ","TIA","SUI","SEI","JUP","WIF","BONK","PEPE","SHIB","FET","RNDR","GRT","SAND","MANA","AXS","GALA","IMX","ALGO","ICP","FIL","EOS","XLM","VET","HBAR","AAVE","MKR","COMP","CRV","SUSHI","ZEC","XMR","ETC","BCH"];
 
-/* ─── API LAYER ──────────────────────────────────────────── */
-const api={
-  _headers:(tok,extra={})=>({
-    "Content-Type":"application/json","apikey":CFG.SUPABASE_KEY,
-    ...(tok?{"Authorization":`Bearer ${tok}`}:{}), ...extra
-  }),
-  async _req(path,method="GET",body=null,tok=null,extra={}){
-    const doReq=async(t)=>fetch(`${CFG.SUPABASE_URL}${path}`,{method,headers:api._headers(t,extra),body:body?JSON.stringify(body):null});
-    let res=await doReq(tok);
-    if(res.status===401&&tok){const nt=await api.refreshToken();if(nt){res=await doReq(nt);}}
-    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||e.error_description||`HTTP ${res.status}`);}
-    const txt=await res.text();return txt?JSON.parse(txt):null;
-  },
-  async refreshToken(){
-    const rt=localStorage.getItem("tl_rt");if(!rt)return null;
-    try{
-      const r=await fetch(`${CFG.SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{method:"POST",headers:{"Content-Type":"application/json","apikey":CFG.SUPABASE_KEY},body:JSON.stringify({refresh_token:rt})});
-      const d=await r.json();
-      if(d.access_token){store.setToken(d.access_token,d.refresh_token);return d.access_token;}
-    }catch{}return null;
-  },
-  async auth(path,body){
-    const r=await fetch(`${CFG.SUPABASE_URL}/auth/v1${path}`,{method:"POST",headers:{"Content-Type":"application/json","apikey":CFG.SUPABASE_KEY},body:JSON.stringify(body)});
-    const d=await r.json();if(!r.ok)throw new Error(d.error_description||d.msg||"Auth failed");return d;
-  },
-  db:(path,method,body,tok,extra)=>api._req(`/rest/v1/${path}`,method,body,tok,extra),
-  upsert:(path,body,tok)=>api.db(path,"POST",body,tok,{"Prefer":"resolution=merge-duplicates,return=representation"}),
-  async uploadAvatar(file,uid,tok){
-    const ext=file.name.split(".").pop().toLowerCase();
-    const path=`${uid}/avatar.${ext}`;
-    const r=await fetch(`${CFG.SUPABASE_URL}/storage/v1/object/avatars/${path}`,{method:"POST",headers:{"apikey":CFG.SUPABASE_KEY,"Authorization":`Bearer ${tok}`,"x-upsert":"true","Content-Type":file.type},body:file});
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||"Upload failed");}
-    return`${CFG.SUPABASE_URL}/storage/v1/object/public/avatars/${path}?t=${Date.now()}`;
-  }
+/* ── STORAGE ─────────────────────────────────────────── */
+const store = {
+  getTok: () => localStorage.getItem("tl_tok") || null,
+  setTok: (t, r) => { localStorage.setItem("tl_tok", t); if (r) localStorage.setItem("tl_rt", r); },
+  clear: () => { localStorage.removeItem("tl_tok"); localStorage.removeItem("tl_rt"); },
+  getUID: () => { try { return JSON.parse(atob(store.getTok().split(".")[1])).sub; } catch { return null; } }
 };
 
-/* ─── LOCAL STORE ────────────────────────────────────────── */
-const store={
-  getToken:()=>localStorage.getItem("tl_tok")||null,
-  setToken:(tok,rt)=>{localStorage.setItem("tl_tok",tok);if(rt)localStorage.setItem("tl_rt",rt);},
-  clearTokens:()=>{localStorage.removeItem("tl_tok");localStorage.removeItem("tl_rt");},
-  getUID:()=>{try{return JSON.parse(atob(store.getToken().split(".")[1])).sub;}catch{return null;}},
-};
+/* ── API ─────────────────────────────────────────────── */
+async function refreshTok() {
+  const rt = localStorage.getItem("tl_rt"); if (!rt) return null;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, { method:"POST", headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY}, body:JSON.stringify({refresh_token:rt}) });
+    const d = await r.json();
+    if (d.access_token) { store.setTok(d.access_token, d.refresh_token); return d.access_token; }
+  } catch {}
+  return null;
+}
 
-/* ─── HELPERS ────────────────────────────────────────────── */
-const fmt=v=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2}).format(v);
-const fmtShort=v=>{const a=Math.abs(v);if(a===0)return"$0.00";return a>=1000?`${v<0?"-":""}$${(a/1000).toFixed(1)}k`:fmt(v);};
-const fmtDate=d=>new Date(d+"T00:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
-const fmtMonth=m=>{const[y,mo]=m.split("-");return new Date(+y,+mo-1).toLocaleDateString("en-US",{month:"short",year:"2-digit"});};
-const todayStr=()=>new Date().toISOString().slice(0,10);
-const sanitize=s=>String(s||"").trim().slice(0,200);
-const clamp=(v,mn,mx)=>Math.min(mx,Math.max(mn,v));
-const isValidNum=v=>typeof v==="number"&&isFinite(v)&&!isNaN(v);
-const initials=name=>name?name.trim().split(/\s+/).map(w=>w[0]||"").join("").slice(0,2).toUpperCase():"?";
-const getInitials=profile=>initials(profile?.full_name||"");
+async function dbFetch(path, method="GET", body=null, tok=null, extra={}) {
+  const mkHeaders = (t) => ({ "Content-Type":"application/json", "apikey":SUPABASE_KEY, ...(t ? {"Authorization":`Bearer ${t}`} : {}), ...extra });
+  const doReq = (t) => fetch(`${SUPABASE_URL}${path}`, { method, headers:mkHeaders(t), body:body?JSON.stringify(body):null });
+  let res = await doReq(tok);
+  if (res.status === 401 && tok) { const nt = await refreshTok(); if (nt) { tok = nt; res = await doReq(nt); } }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || e.error_description || `Error ${res.status}`); }
+  const txt = await res.text(); return txt ? JSON.parse(txt) : null;
+}
 
-/* ─── CONTEXT ────────────────────────────────────────────── */
-const ToastCtx=createContext(null);
-function ToastProvider({children}){
-  const [toasts,setToasts]=useState([]);
-  const add=useCallback((msg,type="info",dur=5000)=>{
-    const id=Date.now()+Math.random();
-    setToasts(p=>[...p,{id,msg,type}]);
-    setTimeout(()=>setToasts(p=>p.filter(t=>t.id!==id)),dur);
-  },[]);
-  const remove=useCallback(id=>setToasts(p=>p.filter(t=>t.id!==id)),[]);
-  return(
-    <ToastCtx.Provider value={add}>
-      {children}
-      <div role="status" aria-live="polite" style={{position:"fixed",top:68,left:"50%",transform:"translateX(-50%)",zIndex:9999,display:"flex",flexDirection:"column",gap:8,alignItems:"center",width:"min(420px,94vw)"}}>
-        {toasts.map(t=>(
-          <div key={t.id} className={`toast toast-${t.type}`} role="alert" style={{width:"100%"}}>
-            <div style={{fontSize:18,flexShrink:0}}>{t.type==="success"?"✓":t.type==="warning"?"⚠":t.type==="error"?"✕":"i"}</div>
-            <div style={{flex:1,fontSize:14,fontWeight:500,lineHeight:1.45}}>{t.msg}</div>
-            <button onClick={()=>remove(t.id)} aria-label="Dismiss" style={{background:"none",border:"none",cursor:"pointer",opacity:0.5,fontSize:16,padding:"0 2px",flexShrink:0}}>×</button>
-          </div>
-        ))}
-      </div>
-    </ToastCtx.Provider>
+async function authFetch(path, body) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1${path}`, { method:"POST", headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY}, body:JSON.stringify(body) });
+  const d = await r.json(); if (!r.ok) throw new Error(d.error_description || d.msg || "Auth failed"); return d;
+}
+
+const upsert = (path, body, tok) => dbFetch(`/rest/v1/${path}`, "POST", body, tok, {"Prefer":"resolution=merge-duplicates,return=representation"});
+
+async function uploadAvatar(file, uid, tok) {
+  const ext = file.name.split(".").pop().toLowerCase();
+  const path = `${uid}/avatar.${ext}`;
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/avatars/${path}`, { method:"POST", headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${tok}`,"x-upsert":"true","Content-Type":file.type}, body:file });
+  if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.message || "Upload failed"); }
+  return `${SUPABASE_URL}/storage/v1/object/public/avatars/${path}?t=${Date.now()}`;
+}
+
+/* ── HELPERS ─────────────────────────────────────────── */
+const fmt = v => new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2}).format(v);
+const fmtShort = v => { const a=Math.abs(v); if(!a)return"$0.00"; return a>=1000?`${v<0?"-":""}$${(a/1000).toFixed(1)}k`:fmt(v); };
+const fmtDate = d => new Date(d+"T00:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+const fmtMonth = m => { const [y,mo]=m.split("-"); return new Date(+y,+mo-1).toLocaleDateString("en-US",{month:"short",year:"2-digit"}); };
+const todayStr = () => new Date().toISOString().slice(0,10);
+const clamp = (v,mn,mx) => Math.min(mx,Math.max(mn,v));
+const clean = s => String(s||"").trim().replace(/[<>"'`]/g,"").slice(0,200);
+const getInitials = name => name ? name.trim().split(/\s+/).map(w=>w[0]||"").join("").slice(0,2).toUpperCase() : "?";
+
+/* ── TOAST SYSTEM ────────────────────────────────────── */
+let _toastSetter = null;
+function useToastSetup() {
+  const [toasts, setToasts] = useState([]);
+  _toastSetter = setToasts;
+  return toasts;
+}
+function showToast(msg, type="info", dur=5000) {
+  if (!_toastSetter) return;
+  const id = Date.now() + Math.random();
+  _toastSetter(p => [...p, {id, msg, type}]);
+  setTimeout(() => _toastSetter(p => p.filter(t => t.id !== id)), dur);
+}
+function removeToast(id) { if (_toastSetter) _toastSetter(p => p.filter(t => t.id !== id)); }
+
+function ToastContainer() {
+  const toasts = useToastSetup();
+  const icons = {success:"✓", warning:"⚠", error:"✕", info:"i"};
+  return (
+    <div className="toast-wrap">
+      {toasts.map(t => (
+        <div key={t.id} className={`toast t-${t.type}`}>
+          <span style={{fontSize:16,fontWeight:700,flexShrink:0}}>{icons[t.type]||"i"}</span>
+          <span style={{flex:1,fontSize:13,fontWeight:500,lineHeight:1.45}}>{t.msg}</span>
+          <button onClick={()=>removeToast(t.id)} style={{background:"none",border:"none",cursor:"pointer",opacity:0.5,fontSize:16,padding:"0 2px",flexShrink:0,fontFamily:"inherit"}}>×</button>
+        </div>
+      ))}
+    </div>
   );
 }
-const useToast=()=>useContext(ToastCtx);
 
-/* ─── SHARED COMPONENTS ──────────────────────────────────── */
-const Badge=({children,type="zero",style={}})=><span className={`badge badge-${type}`} style={style}>{children}</span>;
+/* ── SHARED COMPONENTS ───────────────────────────────── */
+const Badge = ({children, type="z"}) => <span className={`badge b${type}`}>{children}</span>;
 
-const Spinner=({size=18})=>(
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{animation:"spin 0.7s linear infinite"}} aria-hidden="true">
-    <style>{"@keyframes spin{to{transform:rotate(360deg)}}"}</style>
+const Spinner = ({size=16}) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{animation:"spinR 0.7s linear infinite",flexShrink:0}}>
     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="32" strokeDashoffset="12" strokeLinecap="round"/>
   </svg>
 );
 
-const Donut=({win,loss,size=120})=>{
-  const total=win+loss;
-  if(!total)return<div style={{width:size,height:size,borderRadius:"50%",background:"var(--gray-100)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"var(--gray-400)"}}>No data</div>;
-  const r=46,cx=60,cy=60,circ=2*Math.PI*r,winArc=circ*(win/total);
-  return(
-    <div style={{position:"relative",width:size,height:size,flexShrink:0}} role="img" aria-label={`Win rate ${((win/total)*100).toFixed(0)}%`}>
-      <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true">
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#FEE2E2" strokeWidth="14"/>
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--green)" strokeWidth="14" strokeDasharray={`${winArc} ${circ-winArc}`} strokeDashoffset={circ*0.25} strokeLinecap="round" style={{transition:"stroke-dasharray 0.6s ease"}}/>
+function Donut({win, loss, size=120}) {
+  const total = win + loss;
+  if (!total) return <div style={{width:size,height:size,borderRadius:"50%",background:"var(--gray-100)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"var(--gray-400)"}}>No data</div>;
+  const r=46, cx=60, cy=60, circ=2*Math.PI*r, arc=circ*(win/total);
+  return (
+    <div style={{position:"relative",width:size,height:size,flexShrink:0}}>
+      <svg width={size} height={size} viewBox="0 0 120 120">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#FEE2E2" strokeWidth="13"/>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--green)" strokeWidth="13" strokeDasharray={`${arc} ${circ-arc}`} strokeDashoffset={circ*0.25} strokeLinecap="round" style={{transition:"stroke-dasharray 0.5s ease"}}/>
       </svg>
       <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:18,color:"var(--gray-900)"}}>{((win/total)*100).toFixed(0)}%</div>
+        <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:17,color:"var(--gray-900)"}}>{((win/total)*100).toFixed(0)}%</div>
         <div style={{fontSize:10,color:"var(--gray-400)",fontWeight:500}}>WIN</div>
       </div>
     </div>
   );
-};
+}
 
-const CoinInput=({value,onChange,usedCoins})=>{
-  const [show,setShow]=useState(false);
-  const ref=useRef();
-  const suggestions=useMemo(()=>{
-    if(!value)return[];
-    const v=value.toUpperCase();
-    return[...new Set([...usedCoins,...COINS])].filter(c=>c.startsWith(v)&&c!==v).slice(0,8);
-  },[value,usedCoins]);
-  useEffect(()=>{
-    const h=e=>{if(ref.current&&!ref.current.contains(e.target))setShow(false);};
-    document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);
-  },[]);
-  return(
+function CoinInput({value, onChange, usedCoins}) {
+  const [show, setShow] = useState(false);
+  const ref = useRef();
+  const suggestions = useMemo(() => {
+    if (!value) return [];
+    const v = value.toUpperCase();
+    return [...new Set([...usedCoins, ...COINS])].filter(c => c.startsWith(v) && c !== v).slice(0, 8);
+  }, [value, usedCoins]);
+  useEffect(() => {
+    const h = e => { if (ref.current && !ref.current.contains(e.target)) setShow(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+  return (
     <div ref={ref} style={{position:"relative"}}>
-      <input type="text" placeholder="BTC, ETH..." value={value} autoComplete="off" autoCapitalize="characters"
-        onChange={e=>{onChange(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,""));setShow(true);}}
-        onFocus={()=>setShow(true)} aria-label="Ticker symbol" aria-autocomplete="list"/>
-      {show&&suggestions.length>0&&(
-        <div role="listbox" style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,background:"var(--white)",border:"1.5px solid var(--gray-200)",borderRadius:10,boxShadow:"var(--shadow-lg)",zIndex:300,overflow:"hidden",maxHeight:220,overflowY:"auto"}}>
-          {suggestions.map(c=>(
-            <div key={c} role="option" onMouseDown={()=>{onChange(c);setShow(false);}}
-              style={{padding:"10px 14px",cursor:"pointer",fontSize:14,fontWeight:500,transition:"background var(--transition)"}}
-              onMouseEnter={e=>e.currentTarget.style.background="var(--blue-light)"}
-              onMouseLeave={e=>e.currentTarget.style.background=""}>
-              {c}
-            </div>
+      <input type="text" placeholder="BTC, ETH..." value={value}
+        onChange={e => { onChange(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"")); setShow(true); }}
+        onFocus={() => setShow(true)} autoComplete="off"/>
+      {show && suggestions.length > 0 && (
+        <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,background:"#fff",border:"1.5px solid var(--gray-200)",borderRadius:10,boxShadow:"0 8px 20px rgba(0,0,0,0.1)",zIndex:300,overflow:"hidden",maxHeight:210,overflowY:"auto"}}>
+          {suggestions.map(c => (
+            <div key={c} onMouseDown={() => { onChange(c); setShow(false); }}
+              style={{padding:"9px 13px",cursor:"pointer",fontSize:14,fontWeight:500,transition:"background 0.1s"}}
+              onMouseEnter={e => e.currentTarget.style.background="var(--blue-light)"}
+              onMouseLeave={e => e.currentTarget.style.background=""}>{c}</div>
           ))}
         </div>
       )}
     </div>
   );
-};
+}
 
-const Slider=({label,value,onChange,min,max,step=1,display,color="var(--blue)",id})=>{
-  const [local,setLocal]=useState(String(value));
-  useEffect(()=>setLocal(String(value)),[value]);
-  const pct=clamp(((value-min)/(max-min))*100,0,100);
-  const commit=v=>{const n=parseFloat(v);if(isValidNum(n))onChange(clamp(n,min,max));};
-  return(
-    <div style={{marginBottom:18}}>
+function Slider({label, value, onChange, min, max, step=1, display, color="var(--blue)", id}) {
+  const [local, setLocal] = useState(String(value));
+  useEffect(() => setLocal(String(value)), [value]);
+  const pct = clamp(((value-min)/(max-min))*100, 0, 100);
+  const commit = v => { const n=parseFloat(v); if (!isNaN(n)) onChange(clamp(n,min,max)); };
+  return (
+    <div style={{marginBottom:17}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}>
-        <label htmlFor={id} className="form-label" style={{marginBottom:0}}>{label}</label>
-        <input id={`${id}-num`} type="number" value={local} min={min} max={max} step={step} aria-label={`${label} value`}
-          onChange={e=>{setLocal(e.target.value);commit(e.target.value);}}
-          onBlur={e=>{const n=parseFloat(e.target.value);if(!isValidNum(n)||n<min){onChange(min);setLocal(String(min));}else if(n>max){onChange(max);setLocal(String(max));}}}
-          style={{width:90,padding:"4px 8px",fontSize:13,fontWeight:700,color,borderColor:`${color}40`,borderRadius:7,outline:"none",background:"var(--gray-50)",textAlign:"center"}}/>
+        <label htmlFor={id} className="flabel" style={{marginBottom:0}}>{label}</label>
+        <input type="number" value={local} min={min} max={max} step={step}
+          onChange={e => { setLocal(e.target.value); commit(e.target.value); }}
+          onBlur={e => { const n=parseFloat(e.target.value); if(isNaN(n)||n<min){onChange(min);setLocal(String(min));}else if(n>max){onChange(max);setLocal(String(max));} }}
+          style={{width:86,padding:"3px 8px",fontSize:13,fontWeight:700,color,border:`1.5px solid ${color}30`,borderRadius:7,outline:"none",background:"var(--gray-50)",textAlign:"center",fontFamily:"'DM Sans',sans-serif"}}/>
       </div>
-      <input id={id} type="range" min={min} max={max} step={step} value={value} aria-label={label}
-        onChange={e=>onChange(parseFloat(e.target.value))}
-        onKeyDown={e=>{
-          if(e.key==="ArrowUp"||e.key==="ArrowRight"){e.preventDefault();onChange(clamp(value+step,min,max));}
-          if(e.key==="ArrowDown"||e.key==="ArrowLeft"){e.preventDefault();onChange(clamp(value-step,min,max));}
+      <input id={id} type="range" min={min} max={max} step={step} value={value}
+        onChange={e => onChange(parseFloat(e.target.value))}
+        onKeyDown={e => {
+          if (e.key==="ArrowUp"||e.key==="ArrowRight") { e.preventDefault(); onChange(clamp(value+step,min,max)); }
+          if (e.key==="ArrowDown"||e.key==="ArrowLeft") { e.preventDefault(); onChange(clamp(value-step,min,max)); }
         }}
         style={{background:`linear-gradient(to right,${color} ${pct}%,var(--gray-200) ${pct}%)`}}/>
-      <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"var(--gray-400)",marginTop:3}}>
+      <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:"var(--gray-400)",marginTop:2}}>
         <span>{display?display(min):min}</span><span>{display?display(max):max}</span>
       </div>
     </div>
   );
-};
+}
 
-const Footer=()=>(
-  <footer style={{background:"var(--gray-900)",color:"var(--gray-500)",padding:"22px 20px",textAlign:"center"}}>
+const Footer = () => (
+  <footer style={{background:"var(--gray-900)",color:"var(--gray-500)",padding:"20px",textAlign:"center",marginTop:"auto"}}>
     <div style={{maxWidth:1060,margin:"0 auto"}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:10}}>
-        <div style={{width:24,height:24,background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"#fff"}} aria-hidden="true">◈</div>
-        <span style={{fontFamily:"'Sora',sans-serif",fontSize:14,fontWeight:700,color:"var(--white)"}}>TradeLog</span>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,marginBottom:9}}>
+        <div style={{width:22,height:22,background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>◈</div>
+        <span style={{fontFamily:"'Sora',sans-serif",fontSize:13,fontWeight:700,color:"#fff"}}>TradeLog</span>
       </div>
-      <div style={{width:36,height:1,background:"var(--gray-800)",margin:"9px auto"}}/>
+      <div style={{width:32,height:1,background:"var(--gray-800)",margin:"8px auto"}}/>
       <p style={{fontSize:13,color:"var(--gray-600)"}}>© {new Date().getFullYear()} <span style={{color:"var(--gray-400)",fontWeight:600}}>Towsif Ahmed</span>. All rights reserved.</p>
-      <p style={{fontSize:11,color:"var(--gray-700)",marginTop:4}}>Built for traders · Powered by Supabase & Vercel</p>
+      <p style={{fontSize:11,color:"var(--gray-700)",marginTop:3}}>Built for traders · Powered by Supabase & Vercel</p>
     </div>
   </footer>
 );
 
-/* ─── AUTH ───────────────────────────────────────────────── */
-function AuthScreen({onLogin}){
-  const toast=useToast();
-  const [mode,setMode]=useState("login");
-  const [form,setForm]=useState({fullName:"",birthday:"",email:"",password:""});
-  const [loading,setLoading]=useState(false);
-  const sw=m=>{setMode(m);setForm({fullName:"",birthday:"",email:"",password:""});};
-  const set=k=>e=>setForm(p=>({...p,[k]:e.target.value}));
+/* ── AUTH ────────────────────────────────────────────── */
+function AuthScreen({onLogin}) {
+  const [mode, setMode] = useState("login");
+  const [fullName, setFullName] = useState("");
+  const [birthday, setBirthday] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const sw = m => { setMode(m); setFullName(""); setBirthday(""); setEmail(""); setPassword(""); };
 
-  const validate=()=>{
-    if(!form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){toast("Enter a valid email address.","error");return false;}
-    if(form.password.length<6){toast("Password must be at least 6 characters.","error");return false;}
-    if(mode==="signup"){
-      if(!form.fullName.trim()||form.fullName.trim().length<2){toast("Enter your full name (at least 2 characters).","error");return false;}
-      if(!form.birthday){toast("Enter your birthday.","error");return false;}
-      const bd=new Date(form.birthday);const now=new Date();
-      if(bd>now){toast("Birthday cannot be in the future.","error");return false;}
-      if(now.getFullYear()-bd.getFullYear()>120){toast("Enter a valid birthday.","error");return false;}
+  const handle = async () => {
+    if (!email || !password) { showToast("Enter email and password.", "error"); return; }
+    if (password.length < 6) { showToast("Password must be at least 6 characters.", "error"); return; }
+    if (mode === "signup") {
+      if (!fullName.trim() || fullName.trim().length < 2) { showToast("Enter your full name.", "error"); return; }
+      if (!birthday) { showToast("Enter your birthday.", "error"); return; }
     }
-    return true;
-  };
-
-  const handle=async()=>{
-    if(!validate())return;
     setLoading(true);
-    try{
-      if(mode==="login"){
-        const d=await api.auth("/token?grant_type=password",{email:form.email,password:form.password});
-        store.setToken(d.access_token,d.refresh_token);
+    try {
+      if (mode === "login") {
+        const d = await authFetch("/token?grant_type=password", {email, password});
+        store.setTok(d.access_token, d.refresh_token);
         onLogin(d.access_token);
       } else {
-        const d=await api.auth("/signup",{email:form.email,password:form.password});
-        if(d.access_token&&d.user?.id){
-          store.setToken(d.access_token,d.refresh_token);
-          await api.upsert("profiles",{user_id:d.user.id,full_name:sanitize(form.fullName),birthday:form.birthday},d.access_token);
+        const d = await authFetch("/signup", {email, password});
+        if (d.access_token && d.user?.id) {
+          store.setTok(d.access_token, d.refresh_token);
+          await upsert("profiles", {user_id:d.user.id, full_name:clean(fullName), birthday}, d.access_token);
           onLogin(d.access_token);
-        } else {
-          toast("Account created! Please sign in.","success",6000);
-          sw("login");
-        }
+        } else { showToast("Account created! Please sign in.", "success", 6000); sw("login"); }
       }
-    }catch(e){toast(e.message,"error");}
-    finally{setLoading(false);}
+    } catch(e) { showToast(e.message, "error"); }
+    finally { setLoading(false); }
   };
 
-  return(
+  return (
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column"}}>
-      <div className="auth-split" style={{display:"flex",flex:1}}>
-        {/* Left */}
-        <div className="auth-left-panel" style={{flex:"0 0 400px",background:"linear-gradient(150deg,#1E3A8A,#2563EB,#3B82F6)",padding:"52px 44px",display:"flex",flexDirection:"column",justifyContent:"space-between",color:"#fff",position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",top:-70,right:-70,width:260,height:260,borderRadius:"50%",background:"rgba(255,255,255,0.05)"}} aria-hidden="true"/>
-          <div style={{position:"absolute",bottom:-50,left:-50,width:200,height:200,borderRadius:"50%",background:"rgba(255,255,255,0.04)"}} aria-hidden="true"/>
+      <div style={{display:"flex",flex:1}}>
+        {/* Left panel */}
+        <div className="auth-left" style={{flex:"0 0 400px",background:"linear-gradient(150deg,#1E3A8A,#2563EB,#3B82F6)",padding:"50px 42px",display:"flex",flexDirection:"column",justifyContent:"space-between",color:"#fff",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:-70,right:-70,width:250,height:250,borderRadius:"50%",background:"rgba(255,255,255,0.05)"}}/>
+          <div style={{position:"absolute",bottom:-50,left:-50,width:190,height:190,borderRadius:"50%",background:"rgba(255,255,255,0.04)"}}/>
           <div>
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:48}}>
-              <div style={{width:36,height:36,borderRadius:10,background:"rgba(255,255,255,0.18)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17}} aria-hidden="true">◈</div>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:46}}>
+              <div style={{width:36,height:36,borderRadius:10,background:"rgba(255,255,255,0.18)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17}}>◈</div>
               <span style={{fontFamily:"'Sora',sans-serif",fontSize:20,fontWeight:700}}>TradeLog</span>
             </div>
-            <h1 style={{fontFamily:"'Sora',sans-serif",fontSize:30,fontWeight:800,lineHeight:1.25,marginBottom:12}}>Track every trade.<br/>Grow every day.</h1>
-            <p style={{fontSize:14,opacity:0.75,lineHeight:1.7}}>Log your crypto trades, calculate PnL, and analyze performance — all in one place.</p>
+            <h1 style={{fontFamily:"'Sora',sans-serif",fontSize:29,fontWeight:800,lineHeight:1.25,marginBottom:11}}>Track every trade.<br/>Grow every day.</h1>
+            <p style={{fontSize:14,opacity:0.72,lineHeight:1.7}}>Log your crypto trades, calculate PnL, and analyze performance — all in one place.</p>
           </div>
-          <ul style={{listStyle:"none",display:"flex",flexDirection:"column",gap:11}} aria-label="Features">
-            {["Per-trade PnL tracking","Binance Futures calculator","Monthly performance charts","Profile and coin analytics","Smart gain/loss notifications"].map(t=>(
-              <li key={t} style={{display:"flex",alignItems:"center",gap:10,fontSize:13,opacity:0.82}}>
-                <span style={{width:5,height:5,borderRadius:"50%",background:"rgba(255,255,255,0.55)",flexShrink:0}} aria-hidden="true"/>
+          <ul style={{listStyle:"none",display:"flex",flexDirection:"column",gap:10}}>
+            {["Per-trade PnL tracking","Binance Futures calculator","Monthly performance charts","Profile & coin analytics","Smart gain/loss notifications"].map(t => (
+              <li key={t} style={{display:"flex",alignItems:"center",gap:9,fontSize:13,opacity:0.82}}>
+                <span style={{width:5,height:5,borderRadius:"50%",background:"rgba(255,255,255,0.5)",flexShrink:0}}/>
                 {t}
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Right */}
+        {/* Right panel */}
         <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"36px 20px",background:"var(--gray-50)"}}>
           <div style={{width:"100%",maxWidth:380,animation:"fadeUp 0.4s ease both"}}>
-            <div style={{textAlign:"center",marginBottom:24}}>
-              <div style={{width:40,height:40,background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:"#fff",margin:"0 auto 12px"}} aria-hidden="true">◈</div>
-              <h2 style={{fontFamily:"'Sora',sans-serif",fontSize:22,fontWeight:700,color:"var(--gray-900)",marginBottom:4}}>{mode==="login"?"Welcome back":"Create account"}</h2>
+            <div style={{textAlign:"center",marginBottom:22}}>
+              <div style={{width:38,height:38,background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,color:"#fff",margin:"0 auto 11px"}}>◈</div>
+              <h2 style={{fontFamily:"'Sora',sans-serif",fontSize:21,fontWeight:700,color:"var(--gray-900)",marginBottom:3}}>{mode==="login"?"Welcome back":"Create account"}</h2>
               <p style={{fontSize:13,color:"var(--gray-500)"}}>{mode==="login"?"Sign in to your account":"Join TradeLog and start tracking"}</p>
             </div>
-            <form onSubmit={e=>{e.preventDefault();handle();}} noValidate>
-              <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                {mode==="signup"&&<>
-                  <div><label htmlFor="fn" className="form-label">Full Name</label><input id="fn" type="text" placeholder="e.g. Towsif Ahmed" value={form.fullName} onChange={set("fullName")} autoComplete="name" required minLength={2} maxLength={100}/></div>
-                  <div><label htmlFor="bd" className="form-label">Birthday</label><input id="bd" type="date" value={form.birthday} onChange={set("birthday")} required/></div>
-                </>}
-                <div><label htmlFor="em" className="form-label">Email</label><input id="em" type="email" placeholder="you@email.com" value={form.email} onChange={set("email")} autoComplete={mode==="login"?"current-password":"email"} required/></div>
-                <div><label htmlFor="pw" className="form-label">Password</label><input id="pw" type="password" placeholder="Min. 6 characters" value={form.password} onChange={set("password")} autoComplete={mode==="login"?"current-password":"new-password"} required minLength={6}/></div>
-                <button type="submit" disabled={loading} className="btn btn-primary btn-lg" style={{marginTop:4,width:"100%",justifyContent:"center",gap:8}}>
-                  {loading&&<Spinner size={16}/>}
-                  {loading?"Please wait...":(mode==="login"?"Sign In":"Create Account")}
-                </button>
-              </div>
-            </form>
-            <p style={{textAlign:"center",marginTop:18,fontSize:13,color:"var(--gray-400)"}}>
-              {mode==="login"?"Don't have an account? ":"Already have an account? "}
-              <button onClick={()=>sw(mode==="login"?"signup":"login")} style={{background:"none",border:"none",color:"var(--blue)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"inherit",padding:0}}>
-                {mode==="login"?"Sign Up":"Sign In"}
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+              {mode==="signup" && <>
+                <div><label className="flabel">Full Name</label><input type="text" placeholder="e.g. Towsif Ahmed" value={fullName} onChange={e=>setFullName(e.target.value)} maxLength={100}/></div>
+                <div><label className="flabel">Birthday</label><input type="date" value={birthday} onChange={e=>setBirthday(e.target.value)}/></div>
+              </>}
+              <div><label className="flabel">Email</label><input type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
+              <div><label className="flabel">Password</label><input type="password" placeholder="Min. 6 characters" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
+              <button onClick={handle} disabled={loading} className="btn btn-blue" style={{marginTop:4,width:"100%",padding:"13px",fontSize:15,borderRadius:11,gap:8}}>
+                {loading && <Spinner size={15}/>}
+                {loading ? "Please wait..." : (mode==="login" ? "Sign In" : "Create Account")}
+              </button>
+            </div>
+            <p style={{textAlign:"center",marginTop:17,fontSize:13,color:"var(--gray-400)"}}>
+              {mode==="login" ? "Don't have an account? " : "Already have an account? "}
+              <button onClick={()=>sw(mode==="login"?"signup":"login")} style={{background:"none",border:"none",color:"var(--blue)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"'DM Sans',sans-serif",padding:0}}>
+                {mode==="login" ? "Sign Up" : "Sign In"}
               </button>
             </p>
           </div>
@@ -440,116 +375,121 @@ function AuthScreen({onLogin}){
   );
 }
 
-/* ─── PROFILE ────────────────────────────────────────────── */
-function ProfilePage({profile,setProfile,trades,onLogout}){
-  const toast=useToast();
-  const [uploading,setUploading]=useState(false);
-  const [editing,setEditing]=useState(false);
-  const [newName,setNewName]=useState("");
-  const [savingName,setSavingName]=useState(false);
-  const fileRef=useRef();
+/* ── PROFILE ─────────────────────────────────────────── */
+function ProfilePage({profile, setProfile, trades, onLogout}) {
+  const [uploading, setUploading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const fileRef = useRef();
 
-  const stats=useMemo(()=>{
-    if(!trades.length)return{totalPNL:0,winDays:0,lossDays:0,winTrades:0,lossTrades:0,best:0,worst:0,avgDaily:0,dayWinRate:0,tradeWinRate:0,coinList:[],totalDays:0,bestStreak:0,breakEven:0};
-    const dayMap={};
-    trades.forEach(t=>{
-      if(!dayMap[t.date])dayMap[t.date]={date:t.date,trades:[],total:0};
-      dayMap[t.date].trades.push(t);dayMap[t.date].total+=parseFloat(t.result)||0;
+  const stats = useMemo(() => {
+    if (!trades.length) return {totalPNL:0,winDays:0,lossDays:0,winTrades:0,lossTrades:0,best:0,worst:0,avgDaily:0,dayWinRate:0,tradeWinRate:0,coinList:[],totalDays:0,bestStreak:0,breakEven:0};
+    const dayMap = {};
+    trades.forEach(t => {
+      if (!dayMap[t.date]) dayMap[t.date] = {date:t.date,trades:[],total:0};
+      dayMap[t.date].trades.push(t);
+      dayMap[t.date].total += parseFloat(t.result) || 0;
     });
-    const dayList=Object.values(dayMap);
-    const totalPNL=dayList.reduce((s,d)=>s+d.total,0);
-    const winDays=dayList.filter(d=>d.total>0).length;
-    const lossDays=dayList.filter(d=>d.total<0).length;
-    const winTrades=trades.filter(t=>parseFloat(t.result)>0).length;
-    const lossTrades=trades.filter(t=>parseFloat(t.result)<0).length;
-    const totals=dayList.map(d=>d.total);
-    const best=Math.max(...totals,0);const worst=Math.min(...totals,0);
-    const avgDaily=dayList.length?totalPNL/dayList.length:0;
-    const coinMap={};
-    trades.forEach(t=>{const c=t.ticker||"OTHER";if(!coinMap[c])coinMap[c]={count:0,pnl:0,wins:0};coinMap[c].count++;coinMap[c].pnl+=parseFloat(t.result)||0;if((parseFloat(t.result)||0)>0)coinMap[c].wins++;});
-    const coinList=Object.entries(coinMap).sort((a,b)=>b[1].count-a[1].count).slice(0,8);
-    const sorted=[...dayList].sort((a,b)=>a.date.localeCompare(b.date));
-    let bestStreak=0,cur=0;sorted.forEach(d=>{if(d.total>0){cur++;bestStreak=Math.max(bestStreak,cur);}else cur=0;});
-    return{totalPNL,winDays,lossDays,winTrades,lossTrades,best,worst,avgDaily,dayWinRate:dayList.length?(winDays/dayList.length*100):0,tradeWinRate:trades.length?(winTrades/trades.length*100):0,coinList,totalDays:dayList.length,bestStreak,breakEven:trades.length-winTrades-lossTrades};
-  },[trades]);
+    const dl = Object.values(dayMap);
+    const totalPNL = dl.reduce((s,d) => s+d.total, 0);
+    const winDays = dl.filter(d=>d.total>0).length;
+    const lossDays = dl.filter(d=>d.total<0).length;
+    const winTrades = trades.filter(t=>parseFloat(t.result)>0).length;
+    const lossTrades = trades.filter(t=>parseFloat(t.result)<0).length;
+    const tots = dl.map(d=>d.total);
+    const best = tots.length ? Math.max(...tots) : 0;
+    const worst = tots.length ? Math.min(...tots) : 0;
+    const avgDaily = dl.length ? totalPNL/dl.length : 0;
+    const coinMap = {};
+    trades.forEach(t => { const c=t.ticker||"OTHER"; if(!coinMap[c])coinMap[c]={count:0,pnl:0,wins:0}; coinMap[c].count++; coinMap[c].pnl+=parseFloat(t.result)||0; if((parseFloat(t.result)||0)>0)coinMap[c].wins++; });
+    const coinList = Object.entries(coinMap).sort((a,b)=>b[1].count-a[1].count).slice(0,8);
+    const sorted = [...dl].sort((a,b)=>a.date.localeCompare(b.date));
+    let bestStreak=0, cur=0;
+    sorted.forEach(d => { if(d.total>0){cur++;bestStreak=Math.max(bestStreak,cur);}else cur=0; });
+    return {totalPNL,winDays,lossDays,winTrades,lossTrades,best,worst,avgDaily,dayWinRate:dl.length?(winDays/dl.length*100):0,tradeWinRate:trades.length?(winTrades/trades.length*100):0,coinList,totalDays:dl.length,bestStreak,breakEven:trades.length-winTrades-lossTrades};
+  }, [trades]);
 
-  const handleAvatarUpload=async e=>{
-    const file=e.target.files[0];if(!file)return;
-    if(file.size>CFG.MAX_AVATAR_BYTES){toast("File too large. Maximum size is 500KB.","error");return;}
-    const allowed=["image/jpeg","image/png","image/gif","image/webp"];
-    if(!allowed.includes(file.type)){toast("Only JPG, PNG, GIF or WebP images are allowed.","error");return;}
+  const handleAvatar = async e => {
+    const file = e.target.files[0]; if (!file) return;
+    if (file.size > MAX_AVATAR) { showToast("File too large. Max 500KB.", "error"); return; }
+    const allowed = ["image/jpeg","image/png","image/gif","image/webp"];
+    if (!allowed.includes(file.type)) { showToast("Only JPG, PNG, GIF or WebP allowed.", "error"); return; }
     setUploading(true);
-    try{
-      const tok=store.getToken(),uid=store.getUID();
-      const url=await api.uploadAvatar(file,uid,tok);
-      await api.upsert("profiles",{user_id:uid,avatar_url:url},tok);
-      setProfile(p=>({...p,avatar_url:url}));
-      toast("Profile picture updated successfully.","success");
-    }catch(err){toast("Upload failed: "+err.message,"error");}
-    finally{setUploading(false);e.target.value="";}
+    try {
+      const tok = store.getTok(), uid = store.getUID();
+      const url = await uploadAvatar(file, uid, tok);
+      await upsert("profiles", {user_id:uid, avatar_url:url}, tok);
+      setProfile(p => ({...p, avatar_url:url}));
+      showToast("Profile picture updated.", "success");
+    } catch(err) { showToast("Upload failed: "+err.message, "error"); }
+    finally { setUploading(false); e.target.value = ""; }
   };
 
-  const saveName=async()=>{
-    const n=sanitize(newName);
-    if(!n||n.length<2){toast("Name must be at least 2 characters.","error");return;}
+  const saveName = async () => {
+    const n = clean(newName);
+    if (!n || n.length < 2) { showToast("Name must be at least 2 characters.", "error"); return; }
     setSavingName(true);
-    try{
-      const tok=store.getToken(),uid=store.getUID();
-      await api.upsert("profiles",{user_id:uid,full_name:n},tok);
-      setProfile(p=>({...p,full_name:n}));
-      setEditing(false);toast("Name updated successfully.","success");
-    }catch(e){toast("Could not save: "+e.message,"error");}
-    finally{setSavingName(false);}
+    try {
+      const tok = store.getTok(), uid = store.getUID();
+      await upsert("profiles", {user_id:uid, full_name:n}, tok);
+      setProfile(p => ({...p, full_name:n}));
+      setEditing(false); showToast("Name updated.", "success");
+    } catch(e) { showToast("Could not save: "+e.message, "error"); }
+    finally { setSavingName(false); }
   };
 
-  const ini=getInitials(profile);
-  const displayName=profile?.full_name||"Trader";
-  const bdayStr=profile?.birthday?new Date(profile.birthday+"T00:00:00").toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}):"—";
+  const displayName = profile?.full_name || "Trader";
+  const ini = getInitials(profile?.full_name || "");
+  const bdayStr = profile?.birthday ? new Date(profile.birthday+"T00:00:00").toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}) : "—";
 
-  const SB=({label,value,color="var(--gray-900)",bg="var(--gray-50)"})=>(
-    <div style={{background:bg,borderRadius:10,padding:"13px 14px",border:"1px solid var(--gray-200)"}}>
-      <div style={{fontFamily:"'Sora',sans-serif",fontSize:17,fontWeight:700,color,marginBottom:3}}>{value}</div>
-      <div className="form-label" style={{marginBottom:0,fontSize:10}}>{label}</div>
+  const SB = ({label, value, color="var(--gray-900)", bg="var(--gray-50)"}) => (
+    <div style={{background:bg,borderRadius:9,padding:"12px 13px",border:"1px solid var(--gray-200)"}}>
+      <div style={{fontFamily:"'Sora',sans-serif",fontSize:16,fontWeight:700,color,marginBottom:3}}>{value}</div>
+      <div className="flabel" style={{marginBottom:0,fontSize:9}}>{label}</div>
     </div>
   );
 
-  return(
-    <main className="page-wrap" style={{maxWidth:960,margin:"0 auto",padding:"20px 16px",display:"flex",flexDirection:"column",gap:18}} aria-label="Profile page">
-
+  return (
+    <main className="pg" style={{maxWidth:960,margin:"0 auto",padding:"18px 16px",display:"flex",flexDirection:"column",gap:16}}>
       {/* Hero */}
       <div className="card" style={{overflow:"hidden"}}>
-        <div style={{background:"linear-gradient(135deg,#1E3A8A,#2563EB,#3B82F6)",padding:"24px 28px 60px",position:"relative"}} aria-hidden="true">
-          <div style={{position:"absolute",top:-40,right:-40,width:160,height:160,borderRadius:"50%",background:"rgba(255,255,255,0.05)"}}/>
+        <div style={{background:"linear-gradient(135deg,#1E3A8A,#2563EB,#3B82F6)",padding:"22px 26px 58px",position:"relative"}}>
+          <div style={{position:"absolute",top:-40,right:-40,width:150,height:150,borderRadius:"50%",background:"rgba(255,255,255,0.05)"}}/>
           <div style={{display:"flex",justifyContent:"flex-end"}}>
-            <button onClick={onLogout} className="btn btn-sm" style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.28)",color:"#fff"}} aria-label="Sign out">Sign Out</button>
+            <button onClick={onLogout} className="btn" style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.28)",color:"#fff",fontSize:13,padding:"7px 16px"}}>Sign Out</button>
           </div>
         </div>
-        <div style={{padding:"0 28px 22px",marginTop:-44,display:"flex",alignItems:"flex-end",gap:14,flexWrap:"wrap"}}>
+        <div style={{padding:"0 26px 20px",marginTop:-42,display:"flex",alignItems:"flex-end",gap:13,flexWrap:"wrap"}}>
           {/* Avatar */}
           <div style={{position:"relative",flexShrink:0}}>
-            <div style={{width:80,height:80,borderRadius:"50%",border:"4px solid #fff",boxShadow:"var(--shadow-md)",overflow:"hidden",background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",display:"flex",alignItems:"center",justifyContent:"center"}} role="img" aria-label="Profile picture">
-              {profile?.avatar_url?<img src={profile.avatar_url} alt={displayName} style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>{e.target.style.display="none";}}/>
-                :<span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:26,color:"#fff"}} aria-hidden="true">{ini}</span>}
+            <div style={{width:78,height:78,borderRadius:"50%",border:"4px solid #fff",boxShadow:"0 3px 10px rgba(0,0,0,0.12)",overflow:"hidden",background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} alt={displayName} style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>{e.target.style.display="none";}}/>
+                : <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,fontSize:26,color:"#fff"}}>{ini}</span>
+              }
             </div>
-            <button onClick={()=>fileRef.current?.click()} disabled={uploading} className="btn btn-icon" title="Upload profile picture" aria-label="Upload profile picture"
-              style={{position:"absolute",bottom:2,right:2,width:24,height:24,background:"var(--blue)",border:"2px solid #fff",fontSize:11,boxShadow:"0 1px 5px rgba(37,99,235,0.3)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              {uploading?<Spinner size={12}/>:"+"}
+            <button onClick={()=>fileRef.current?.click()} disabled={uploading} title="Upload photo"
+              style={{position:"absolute",bottom:2,right:2,width:23,height:23,borderRadius:"50%",background:"var(--blue)",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#fff",fontSize:11,boxShadow:"0 1px 5px rgba(37,99,235,0.3)"}}>
+              {uploading ? <Spinner size={11}/> : "+"}
             </button>
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" style={{display:"none"}} onChange={handleAvatarUpload} aria-label="Upload avatar file"/>
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" style={{display:"none"}} onChange={handleAvatar}/>
           </div>
 
-          {/* Name */}
-          <div style={{flex:1,minWidth:0,paddingBottom:4}}>
-            {!editing?(
+          {/* Name section */}
+          <div style={{flex:1,minWidth:0,paddingBottom:3}}>
+            {!editing ? (
               <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:4}}>
-                <h2 style={{fontFamily:"'Sora',sans-serif",fontSize:20,fontWeight:700,color:"var(--gray-900)",whiteSpace:"normal",wordBreak:"break-word"}}>{displayName}</h2>
-                <button onClick={()=>{setNewName(profile?.full_name||"");setEditing(true);}} className="btn btn-sm btn-outline" aria-label="Edit display name" style={{fontSize:11}}>Edit Name</button>
+                <h2 style={{fontFamily:"'Sora',sans-serif",fontSize:20,fontWeight:700,color:"var(--gray-900)",wordBreak:"break-word",lineHeight:1.3}}>{displayName}</h2>
+                <button onClick={()=>{setNewName(profile?.full_name||"");setEditing(true);}} className="btn btn-ghost" style={{fontSize:11,padding:"4px 11px"}}>Edit Name</button>
               </div>
-            ):(
-              <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>
-                <input type="text" value={newName} onChange={e=>setNewName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&saveName()} placeholder="Enter full name" maxLength={100} style={{maxWidth:200,padding:"7px 11px",fontSize:14,fontWeight:600}} aria-label="New display name"/>
-                <button onClick={saveName} disabled={savingName} className="btn btn-primary btn-sm">{savingName?<Spinner size={13}/>:"Save"}</button>
-                <button onClick={()=>setEditing(false)} className="btn btn-ghost btn-sm">Cancel</button>
+            ) : (
+              <div style={{display:"flex",gap:7,alignItems:"center",flexWrap:"wrap",marginBottom:4}}>
+                <input type="text" value={newName} onChange={e=>setNewName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&saveName()} placeholder="Enter full name" maxLength={100} style={{maxWidth:200,padding:"7px 10px",fontSize:14,fontWeight:600}}/>
+                <button onClick={saveName} disabled={savingName} className="btn btn-blue" style={{padding:"7px 14px",fontSize:13}}>
+                  {savingName ? <Spinner size={13}/> : "Save"}
+                </button>
+                <button onClick={()=>setEditing(false)} className="btn btn-ghost" style={{padding:"7px 11px",fontSize:13}}>Cancel</button>
               </div>
             )}
             <p style={{fontSize:12,color:"var(--gray-500)",display:"flex",gap:12,flexWrap:"wrap"}}>
@@ -559,19 +499,20 @@ function ProfilePage({profile,setProfile,trades,onLogout}){
             </p>
           </div>
         </div>
-
-        <div style={{padding:"0 28px 18px"}}>
-          <button onClick={()=>fileRef.current?.click()} disabled={uploading} className="btn btn-ghost btn-sm" style={{border:"1.5px dashed var(--gray-300)",gap:6}}>
-            {uploading?<><Spinner size={13}/> Uploading...</>:(profile?.avatar_url?"Change Profile Picture":"Upload Profile Picture")}
+        <div style={{padding:"0 26px 16px"}}>
+          <button onClick={()=>fileRef.current?.click()} disabled={uploading} className="btn btn-ghost" style={{border:"1.5px dashed var(--gray-300)",gap:6,fontSize:13,padding:"8px 15px"}}>
+            {uploading ? <><Spinner size={13}/> Uploading...</> : (profile?.avatar_url ? "Change Profile Picture" : "Upload Profile Picture")}
           </button>
-          <p style={{fontSize:11,color:"var(--gray-400)",marginTop:5}}>JPG, PNG, GIF or WebP — Max 500KB</p>
+          <p style={{fontSize:11,color:"var(--gray-400)",marginTop:4}}>JPG, PNG, GIF or WebP — Max 500KB</p>
         </div>
       </div>
 
-      {/* Stats grid */}
-      <section aria-label="Trading statistics">
-        <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:16,color:"var(--gray-900)",marginBottom:12}}>Trading Statistics <span style={{fontSize:11,color:"var(--gray-400)",fontFamily:"'DM Sans',sans-serif",fontWeight:400}}>(auto-calculated)</span></h3>
-        <div className="stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10}}>
+      {/* Stats */}
+      <section>
+        <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:"var(--gray-900)",marginBottom:11}}>
+          Trading Statistics <span style={{fontSize:11,color:"var(--gray-400)",fontFamily:"'DM Sans',sans-serif",fontWeight:400}}>(auto-calculated)</span>
+        </h3>
+        <div className="stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))",gap:9}}>
           <SB label="Total Trades" value={trades.length}/>
           <SB label="Total PNL" value={`${stats.totalPNL>=0?"+":""}${fmt(stats.totalPNL)}`} color={stats.totalPNL>=0?"var(--green-dark)":"var(--red-dark)"} bg={stats.totalPNL>=0?"var(--green-light)":"var(--red-light)"}/>
           <SB label="Day Win Rate" value={`${stats.dayWinRate.toFixed(1)}%`} color="var(--blue)" bg="var(--blue-light)"/>
@@ -579,7 +520,7 @@ function ProfilePage({profile,setProfile,trades,onLogout}){
           <SB label="Best Day" value={fmt(stats.best)} color="var(--green-dark)" bg="var(--green-light)"/>
           <SB label="Worst Day" value={fmt(stats.worst)} color="var(--red-dark)" bg="var(--red-light)"/>
           <SB label="Avg Daily PNL" value={fmt(stats.avgDaily)} color={stats.avgDaily>=0?"var(--green-dark)":"var(--red-dark)"} bg={stats.avgDaily>=0?"var(--green-light)":"var(--red-light)"}/>
-          <SB label="Best Win Streak" value={`${stats.bestStreak} days`} color="var(--orange)" bg="var(--orange-light)"/>
+          <SB label="Best Streak" value={`${stats.bestStreak} days`} color="var(--orange)" bg="var(--orange-light)"/>
           <SB label="Win Days" value={stats.winDays} color="var(--green-dark)" bg="var(--green-light)"/>
           <SB label="Loss Days" value={stats.lossDays} color="var(--red-dark)" bg="var(--red-light)"/>
           <SB label="Win Trades" value={stats.winTrades} color="var(--green-dark)"/>
@@ -587,15 +528,15 @@ function ProfilePage({profile,setProfile,trades,onLogout}){
         </div>
       </section>
 
-      {/* Win rate + day breakdown */}
-      <div className="profile-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-        <div className="card" style={{padding:"20px"}}>
-          <h4 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,marginBottom:16}}>Trade Win Rate</h4>
-          <div style={{display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
+      {/* Win rate + day */}
+      <div className="profile-cols" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+        <div className="card" style={{padding:"18px"}}>
+          <h4 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,marginBottom:14}}>Trade Win Rate</h4>
+          <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
             <Donut win={stats.winTrades} loss={stats.lossTrades} size={110}/>
-            <div style={{flex:1,minWidth:110,display:"flex",flexDirection:"column",gap:7}}>
-              {[["Winning",stats.winTrades,"var(--green-dark)","var(--green-light)"],["Losing",stats.lossTrades,"var(--red-dark)","var(--red-light)"],["Break Even",stats.breakEven,"var(--gray-500)","var(--gray-100)"]].map(([l,v,c,bg])=>(
-                <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:bg,borderRadius:7,padding:"6px 11px"}}>
+            <div style={{flex:1,minWidth:100,display:"flex",flexDirection:"column",gap:6}}>
+              {[["Winning",stats.winTrades,"var(--green-dark)","var(--green-light)"],["Losing",stats.lossTrades,"var(--red-dark)","var(--red-light)"],["Break Even",stats.breakEven,"var(--gray-500)","var(--gray-100)"]].map(([l,v,c,bg]) => (
+                <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:bg,borderRadius:7,padding:"6px 10px"}}>
                   <span style={{fontSize:12,color:c,fontWeight:600}}>{l}</span>
                   <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:c,fontSize:14}}>{v}</span>
                 </div>
@@ -603,11 +544,11 @@ function ProfilePage({profile,setProfile,trades,onLogout}){
             </div>
           </div>
         </div>
-        <div className="card" style={{padding:"20px"}}>
-          <h4 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,marginBottom:16}}>Day Performance</h4>
-          <div style={{display:"flex",flexDirection:"column",gap:7}}>
-            {[["Best Day",fmt(stats.best),"var(--green-dark)","var(--green-light)"],["Worst Day",fmt(stats.worst),"var(--red-dark)","var(--red-light)"],["Win Days",stats.winDays,"var(--blue)","var(--blue-light)"],["Loss Days",stats.lossDays,"var(--red-dark)","var(--red-light)"],["Avg Daily",fmt(stats.avgDaily),stats.avgDaily>=0?"var(--green-dark)":"var(--red-dark)",stats.avgDaily>=0?"var(--green-light)":"var(--red-light)"]].map(([l,v,c,bg])=>(
-              <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:bg,borderRadius:8,padding:"8px 12px"}}>
+        <div className="card" style={{padding:"18px"}}>
+          <h4 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,marginBottom:14}}>Day Performance</h4>
+          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+            {[["Best Day",fmt(stats.best),"var(--green-dark)","var(--green-light)"],["Worst Day",fmt(stats.worst),"var(--red-dark)","var(--red-light)"],["Win Days",stats.winDays,"var(--blue)","var(--blue-light)"],["Loss Days",stats.lossDays,"var(--red-dark)","var(--red-light)"],["Avg Daily",fmt(stats.avgDaily),stats.avgDaily>=0?"var(--green-dark)":"var(--red-dark)",stats.avgDaily>=0?"var(--green-light)":"var(--red-light)"]].map(([l,v,c,bg]) => (
+              <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:bg,borderRadius:8,padding:"8px 11px"}}>
                 <span style={{fontSize:12,fontWeight:600,color:"var(--gray-600)"}}>{l}</span>
                 <span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:c,fontSize:13}}>{v}</span>
               </div>
@@ -617,31 +558,29 @@ function ProfilePage({profile,setProfile,trades,onLogout}){
       </div>
 
       {/* Coin table */}
-      {stats.coinList.length>0&&(
+      {stats.coinList.length > 0 && (
         <div className="card" style={{overflow:"hidden"}}>
-          <div style={{padding:"16px 20px",borderBottom:"1px solid var(--gray-100)"}}>
+          <div style={{padding:"15px 20px",borderBottom:"1px solid var(--gray-100)"}}>
             <h4 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14}}>Coin Performance</h4>
           </div>
-          <div role="table" aria-label="Coin performance table">
-            <div className="coin-grid" role="row" style={{display:"grid",gridTemplateColumns:"1fr 65px 115px 100px 85px",gap:8,padding:"9px 20px",fontSize:10,color:"var(--gray-400)",fontWeight:600,textTransform:"uppercase",letterSpacing:0.4}}>
-              <div role="columnheader">Coin</div>
-              <div role="columnheader" style={{textAlign:"center"}}>Trades</div>
-              <div role="columnheader" style={{textAlign:"right"}}>Total PnL</div>
-              <div role="columnheader" style={{textAlign:"right"}} className="hide-sm">Avg/Trade</div>
-              <div role="columnheader" style={{textAlign:"right"}}>Win %</div>
+          <div style={{padding:"0"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 60px 110px 90px 80px",gap:8,padding:"8px 20px",fontSize:9,color:"var(--gray-400)",fontWeight:600,textTransform:"uppercase",letterSpacing:0.4}}>
+              <div>Coin</div><div style={{textAlign:"center"}}>Trades</div><div style={{textAlign:"right"}}>Total PnL</div><div className="hide-mob" style={{textAlign:"right"}}>Avg/Trade</div><div style={{textAlign:"right"}}>Win %</div>
             </div>
-            {stats.coinList.map(([coin,data])=>{
-              const wr=data.count?(data.wins/data.count*100).toFixed(0):"0";
-              return(
-                <div key={coin} role="row" className="coin-grid" style={{display:"grid",gridTemplateColumns:"1fr 65px 115px 100px 85px",gap:8,padding:"11px 20px",borderTop:"1px solid var(--gray-50)",alignItems:"center",transition:"background var(--transition)"}} onMouseEnter={e=>e.currentTarget.style.background="var(--gray-50)"} onMouseLeave={e=>e.currentTarget.style.background=""}>
-                  <div role="cell" style={{display:"flex",alignItems:"center",gap:8}}>
-                    <div style={{width:30,height:30,borderRadius:"50%",background:"var(--blue-light)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:9,color:"var(--blue)",flexShrink:0}} aria-hidden="true">{coin.slice(0,3)}</div>
+            {stats.coinList.map(([coin, data]) => {
+              const wr = data.count ? (data.wins/data.count*100).toFixed(0) : "0";
+              return (
+                <div key={coin} style={{display:"grid",gridTemplateColumns:"1fr 60px 110px 90px 80px",gap:8,padding:"11px 20px",borderTop:"1px solid var(--gray-50)",alignItems:"center",transition:"background 0.12s"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="var(--gray-50)"}
+                  onMouseLeave={e=>e.currentTarget.style.background=""}>
+                  <div style={{display:"flex",alignItems:"center",gap:7}}>
+                    <div style={{width:28,height:28,borderRadius:"50%",background:"var(--blue-light)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:8,color:"var(--blue)",flexShrink:0}}>{coin.slice(0,3)}</div>
                     <span style={{fontWeight:700,fontSize:13}}>{coin}</span>
                   </div>
-                  <div role="cell" style={{textAlign:"center"}}><Badge type="zero">{data.count}</Badge></div>
-                  <div role="cell" style={{textAlign:"right",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:data.pnl>=0?"var(--green-dark)":"var(--red-dark)"}}>{data.pnl>=0?"+":""}{fmt(data.pnl)}</div>
-                  <div role="cell" style={{textAlign:"right",fontSize:12,color:"var(--gray-500)"}} className="hide-sm">{fmt(data.pnl/data.count)}</div>
-                  <div role="cell" style={{textAlign:"right"}}><Badge type={+wr>=50?"pos":"neg"}>{wr}%</Badge></div>
+                  <div style={{textAlign:"center"}}><Badge type="z">{data.count}</Badge></div>
+                  <div style={{textAlign:"right",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:12,color:data.pnl>=0?"var(--green-dark)":"var(--red-dark)"}}>{data.pnl>=0?"+":""}{fmt(data.pnl)}</div>
+                  <div className="hide-mob" style={{textAlign:"right",fontSize:11,color:"var(--gray-500)"}}>{fmt(data.pnl/data.count)}</div>
+                  <div style={{textAlign:"right"}}><Badge type={+wr>=50?"p":"n"}>{wr}%</Badge></div>
                 </div>
               );
             })}
@@ -652,102 +591,101 @@ function ProfilePage({profile,setProfile,trades,onLogout}){
   );
 }
 
-/* ─── CALCULATOR ─────────────────────────────────────────── */
-function CalcPage(){
-  const [dir,setDir]=useState("long");
-  const [entry,setEntry]=useState(65000);const[margin,setMargin]=useState(100);const[lev,setLev]=useState(20);
-  const [tpPct,setTpPct]=useState(150);const[slPct,setSlPct]=useState(50);const[bdt,setBdt]=useState(110);const[mm,setMm]=useState(0.5);
+/* ── CALCULATOR ──────────────────────────────────────── */
+function CalcPage() {
+  const [dir, setDir] = useState("long");
+  const [entry, setEntry] = useState(65000);
+  const [margin, setMargin] = useState(100);
+  const [lev, setLev] = useState(20);
+  const [tpPct, setTpPct] = useState(150);
+  const [slPct, setSlPct] = useState(50);
+  const [bdt, setBdt] = useState(110);
+  const [mm, setMm] = useState(0.5);
 
-  const c=useMemo(()=>{
+  const c = useMemo(() => {
     const e=parseFloat(entry),m=parseFloat(margin),l=parseFloat(lev),tp=parseFloat(tpPct),sl=parseFloat(slPct),mmR=parseFloat(mm);
-    if(!e||!m||!l||l<1)return null;
-    const pos=m*l,qty=pos/e,fee=pos*0.001;
+    if (!e||!m||!l||l<1) return null;
+    const pos=m*l, qty=pos/e, fee=pos*0.001;
     const tpP=dir==="long"?e*(1+tp/l/100):e*(1-tp/l/100);
     const slP=dir==="long"?e*(1-sl/l/100):e*(1+sl/l/100);
     const liqP=dir==="long"?e*(1-1/l+mmR/100):e*(1+1/l-mmR/100);
-    const tpG=m*(tp/100),tpN=tpG-fee,tpR=(tpN/m)*100;
-    const slG=-(m*(sl/100)),slN=slG-fee,slR=(slN/m)*100;
-    return{pos,qty,liqP,tpP,tpG,tpN,tpR,slP,slG,slN,slR,rr:`1 : ${(tp/sl).toFixed(2)}`,fee};
-  },[dir,entry,margin,lev,tpPct,slPct,mm]);
+    const tpG=m*(tp/100), tpN=tpG-fee, tpR=(tpN/m)*100;
+    const slG=-(m*(sl/100)), slN=slG-fee, slR=(slN/m)*100;
+    return {pos,qty,liqP,tpP,tpG,tpN,tpR,slP,slG,slN,slR,rr:`1 : ${(tp/sl).toFixed(2)}`,fee};
+  }, [dir,entry,margin,lev,tpPct,slPct,mm]);
 
-  const applyRatio=()=>{const s=parseFloat(slPct);if(s>0){setTpPct(clamp(+(s*3).toFixed(1),1,500));return;}const t=parseFloat(tpPct);if(t>0)setSlPct(clamp(+(t/3).toFixed(1),1,100));};
-  const fP=n=>n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:4});
-  const fN=(n,d=2)=>n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:d});
+  const applyRatio = () => { const s=parseFloat(slPct); if(s>0){setTpPct(clamp(+(s*3).toFixed(1),1,500));return;} const t=parseFloat(tpPct); if(t>0)setSlPct(clamp(+(t/3).toFixed(1),1,100)); };
+  const fP = n => n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:4});
+  const fN = (n,d=2) => n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:d});
 
-  return(
-    <main className="page-wrap" style={{maxWidth:1060,margin:"0 auto",padding:"20px 16px"}} aria-label="Futures PnL Calculator">
-      <header style={{marginBottom:20}}>
-        <h1 style={{fontFamily:"'Sora',sans-serif",fontSize:20,fontWeight:700}}>Futures PnL Calculator</h1>
-        <p style={{fontSize:13,color:"var(--gray-400)",marginTop:3}}>Calculate take profit, stop loss and liquidation prices for Binance Futures</p>
-      </header>
-      <div className="calc-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
-        {/* Inputs */}
-        <div className="card" style={{padding:"22px"}}>
-          <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,marginBottom:18,color:"var(--gray-700)"}}>Trade Setup</h2>
-          <fieldset style={{border:"none",padding:0}}>
-            <legend className="form-label">Direction</legend>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:18}}>
-              {["long","short"].map(d=>(
-                <button key={d} type="button" onClick={()=>setDir(d)} aria-pressed={dir===d}
-                  style={{padding:"10px",borderRadius:9,border:`2px solid ${dir===d?(d==="long"?"var(--green)":"var(--red)"):"var(--gray-200)"}`,background:dir===d?(d==="long"?"var(--green-light)":"var(--red-light)"):"var(--white)",color:dir===d?(d==="long"?"var(--green-dark)":"var(--red-dark)"):"var(--gray-400)",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,cursor:"pointer",transition:"all var(--transition)"}}>
-                  {d==="long"?"LONG":"SHORT"}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-          <Slider id="entry" label="Entry Price (USDT)" value={entry} onChange={setEntry} min={100} max={200000} step={100} display={v=>`$${(v/1000).toFixed(0)}k`}/>
-          <Slider id="margin" label="Initial Margin (USDT)" value={margin} onChange={setMargin} min={10} max={10000} step={10} display={v=>`$${v}`}/>
-          <Slider id="lev" label="Leverage" value={lev} onChange={setLev} min={1} max={125} display={v=>`${v}x`} color="var(--purple)"/>
-          <Slider id="tp" label="Target PnL % (on Margin)" value={tpPct} onChange={setTpPct} min={1} max={500} display={v=>`${v}%`} color="var(--green)"/>
-          <Slider id="sl" label="Max Loss % (on Margin)" value={slPct} onChange={setSlPct} min={1} max={100} display={v=>`${v}%`} color="var(--red)"/>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-            <div><label htmlFor="bdt" className="form-label">BDT Rate</label><input id="bdt" type="number" value={bdt} onChange={e=>setBdt(e.target.value)}/></div>
-            <div><label htmlFor="mm" className="form-label">Maint. Margin %</label><input id="mm" type="number" value={mm} min={0} max={5} step={0.1} onChange={e=>setMm(e.target.value)}/></div>
+  return (
+    <main className="pg" style={{maxWidth:1060,margin:"0 auto",padding:"18px 16px"}}>
+      <div style={{marginBottom:18}}>
+        <h1 style={{fontFamily:"'Sora',sans-serif",fontSize:19,fontWeight:700}}>Futures PnL Calculator</h1>
+        <p style={{fontSize:13,color:"var(--gray-400)",marginTop:2}}>Calculate take profit, stop loss and liquidation prices for Binance Futures</p>
+      </div>
+      <div className="calc-cols" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div className="card" style={{padding:"20px"}}>
+          <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,marginBottom:16,color:"var(--gray-600)",textTransform:"uppercase",letterSpacing:0.4}}>Trade Setup</h2>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:18}}>
+            {["long","short"].map(d => (
+              <button key={d} onClick={()=>setDir(d)} style={{padding:"10px",borderRadius:9,border:`2px solid ${dir===d?(d==="long"?"var(--green)":"var(--red)"):"var(--gray-200)"}`,background:dir===d?(d==="long"?"var(--green-light)":"var(--red-light)"):"#fff",color:dir===d?(d==="long"?"var(--green-dark)":"var(--red-dark)"):"var(--gray-400)",fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,cursor:"pointer",transition:"all 0.15s"}}>
+                {d === "long" ? "LONG" : "SHORT"}
+              </button>
+            ))}
           </div>
-          <div style={{background:"var(--gold-light)",border:"1px solid #FDE68A",borderRadius:9,padding:"10px 13px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <Slider id="c-entry" label="Entry Price (USDT)" value={entry} onChange={setEntry} min={100} max={200000} step={100} display={v=>`$${(v/1000).toFixed(0)}k`}/>
+          <Slider id="c-margin" label="Initial Margin (USDT)" value={margin} onChange={setMargin} min={10} max={10000} step={10} display={v=>`$${v}`}/>
+          <Slider id="c-lev" label="Leverage" value={lev} onChange={setLev} min={1} max={125} display={v=>`${v}x`} color="var(--purple)"/>
+          <Slider id="c-tp" label="Target PnL % (on Margin)" value={tpPct} onChange={setTpPct} min={1} max={500} display={v=>`${v}%`} color="var(--green-dark)"/>
+          <Slider id="c-sl" label="Max Loss % (on Margin)" value={slPct} onChange={setSlPct} min={1} max={100} display={v=>`${v}%`} color="var(--red-dark)"/>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:13}}>
+            <div><label className="flabel">BDT Rate</label><input type="number" value={bdt} onChange={e=>setBdt(e.target.value)}/></div>
+            <div><label className="flabel">Maint. Margin %</label><input type="number" value={mm} min={0} max={5} step={0.1} onChange={e=>setMm(e.target.value)}/></div>
+          </div>
+          <div style={{background:"var(--gold-light)",border:"1px solid #FDE68A",borderRadius:9,padding:"10px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <span style={{fontSize:12,color:"#92400E",fontWeight:500}}>Recommended R:R = 1:3</span>
-            <button onClick={applyRatio} type="button" className="btn btn-sm" style={{background:"var(--gold)",color:"#fff",border:"none"}}>Auto Fix</button>
+            <button onClick={applyRatio} className="btn" style={{background:"var(--gold)",color:"#fff",border:"none",padding:"5px 12px",fontSize:12}}>Auto Fix</button>
           </div>
         </div>
 
-        {/* Results */}
-        <div style={{display:"flex",flexDirection:"column",gap:13}}>
-          <div className="card" style={{padding:"18px"}}>
-            <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,marginBottom:13,color:"var(--gray-700)"}}>Position Summary</h2>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>
-              {[["Direction",<Badge type={dir==="long"?"long":"short"}>{dir==="long"?"LONG":"SHORT"}</Badge>],["Position Size",c?`$${fN(c.pos)} USDT`:"—"],["Quantity",c?`${fN(c.qty,6)}`:"—"],["Risk / Reward",c?c.rr:"—"]].map(([l,v])=>(
-                <div key={l} style={{background:"var(--gray-50)",borderRadius:8,padding:"9px 11px"}}>
-                  <div className="form-label" style={{fontSize:9,marginBottom:2}}>{l}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div className="card" style={{padding:"17px"}}>
+            <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,marginBottom:12,color:"var(--gray-600)",textTransform:"uppercase",letterSpacing:0.4}}>Position Summary</h2>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {[["Direction",<Badge type={dir==="long"?"l":"s"}>{dir==="long"?"LONG":"SHORT"}</Badge>],["Position Size",c?`$${fN(c.pos)} USDT`:"—"],["Quantity",c?fN(c.qty,6):"—"],["Risk / Reward",c?c.rr:"—"]].map(([l,v]) => (
+                <div key={l} style={{background:"var(--gray-50)",borderRadius:8,padding:"9px 10px"}}>
+                  <div className="flabel" style={{fontSize:9,marginBottom:2}}>{l}</div>
                   <div style={{fontWeight:700,fontSize:13}}>{v}</div>
                 </div>
               ))}
             </div>
-            <div style={{background:"var(--red-light)",border:"1px solid #FECACA",borderRadius:8,padding:"10px 13px",marginTop:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div style={{background:"var(--red-light)",border:"1px solid #FECACA",borderRadius:8,padding:"9px 12px",marginTop:9,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <span style={{fontSize:12,color:"var(--red-dark)",fontWeight:600}}>Liquidation Price</span>
               <span style={{fontFamily:"'Sora',sans-serif",fontSize:15,fontWeight:700,color:"var(--red-dark)"}}>${fP(c?.liqP)}</span>
             </div>
           </div>
 
-          {[{label:"Take Profit",color:"var(--green)",borderColor:"var(--green)",bg:"var(--green-light)",price:c?.tpP,move:c?`${(tpPct/lev).toFixed(3)}% move`:"",items:[["Gross",c?.tpG!=null?`+${fmt(c.tpG)}`:"—","var(--green-dark)"],["Net (fees)",c?.tpN!=null?`+${fmt(c.tpN)}`:"—","var(--green-dark)"],["Return",c?.tpR!=null?`+${fN(c.tpR)}%`:"—","var(--green-dark)"]],bdt:c?.tpN},
-           {label:"Stop Loss",color:"var(--red)",borderColor:"var(--red)",bg:"var(--red-light)",price:c?.slP,move:c?`${(slPct/lev).toFixed(3)}% move`:"",items:[["Gross",c?.slG!=null?fmt(c.slG):"—","var(--red-dark)"],["Net (fees)",c?.slN!=null?fmt(c.slN):"—","var(--red-dark)"],["Return",c?.slR!=null?`${fN(c.slR)}%`:"—","var(--red-dark)"]],bdt:c?.slN}].map(sc=>(
-            <div key={sc.label} className="card" style={{padding:"17px",borderLeft:`4px solid ${sc.borderColor}`}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:11}}>
-                <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:sc.color}}>{sc.label}</h3>
-                {sc.move&&<Badge type={sc.label==="Take Profit"?"pos":"neg"} style={{fontSize:10}}>{sc.move}</Badge>}
+          {[{label:"Take Profit",col:"var(--green-dark)",bc:"var(--green)",bg:"var(--green-light)",price:c?.tpP,move:c?`${(tpPct/lev).toFixed(3)}% move`:"",G:c?.tpG,N:c?.tpN,R:c?.tpR,pos:true},
+            {label:"Stop Loss",col:"var(--red-dark)",bc:"var(--red)",bg:"var(--red-light)",price:c?.slP,move:c?`${(slPct/lev).toFixed(3)}% move`:"",G:c?.slG,N:c?.slN,R:c?.slR,pos:false}].map(sc => (
+            <div key={sc.label} className="card" style={{padding:"16px",borderLeft:`4px solid ${sc.bc}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:13,color:sc.col}}>{sc.label}</h3>
+                {sc.move && <Badge type={sc.pos?"p":"n"} style={{fontSize:9}}>{sc.move}</Badge>}
               </div>
-              <div style={{background:sc.bg,borderRadius:8,padding:"11px",marginBottom:9,textAlign:"center"}}>
-                <div className="form-label" style={{marginBottom:2,color:sc.color,fontSize:9}}>Set on Binance</div>
-                <div style={{fontFamily:"'Sora',sans-serif",fontSize:20,fontWeight:700,color:sc.color}}>${fP(sc.price)}</div>
+              <div style={{background:sc.bg,borderRadius:8,padding:"10px",marginBottom:8,textAlign:"center"}}>
+                <div className="flabel" style={{marginBottom:1,color:sc.col,fontSize:9}}>Set on Binance</div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontSize:19,fontWeight:700,color:sc.col}}>${fP(sc.price)}</div>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7}}>
-                {sc.items.map(([l,v,col])=>(
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+                {[["Gross",sc.pos&&sc.G!=null?`+${fmt(sc.G)}`:sc.G!=null?fmt(sc.G):"—",sc.col],["Net",sc.pos&&sc.N!=null?`+${fmt(sc.N)}`:sc.N!=null?fmt(sc.N):"—",sc.col],["Return",sc.pos&&sc.R!=null?`+${fN(sc.R)}%`:sc.R!=null?`${fN(sc.R)}%`:"—",sc.col]].map(([l,v,col]) => (
                   <div key={l} style={{textAlign:"center"}}>
-                    <div className="form-label" style={{fontSize:9,marginBottom:1}}>{l}</div>
+                    <div className="flabel" style={{fontSize:9,marginBottom:1}}>{l}</div>
                     <div style={{fontWeight:700,fontSize:12,color:col}}>{v}</div>
                   </div>
                 ))}
               </div>
-              {sc.bdt!=null&&<p style={{fontSize:10,color:"var(--gray-400)",textAlign:"center",marginTop:6}}>approx. {fN(sc.bdt*parseFloat(bdt))} BDT</p>}
+              {sc.N != null && <p style={{fontSize:10,color:"var(--gray-400)",textAlign:"center",marginTop:5}}>approx. {fN(sc.N*parseFloat(bdt))} BDT</p>}
             </div>
           ))}
         </div>
@@ -756,199 +694,206 @@ function CalcPage(){
   );
 }
 
-/* ─── DASHBOARD ──────────────────────────────────────────── */
-function Dashboard({startCap,setStartCap,onCapSave}){
-  const toast=useToast();
-  const [trades,setTrades]=useState([]);
-  const [capEdit,setCapEdit]=useState(false);const[capInput,setCapInput]=useState("");
-  const [loading,setLoading]=useState(true);
-  const [date,setDate]=useState(todayStr());const[ticker,setTicker]=useState("");
-  const [direction,setDirection]=useState("long");const[result,setResult]=useState("");
-  const [formError,setFormError]=useState("");const[saving,setSaving]=useState(false);
-  const [expandedDay,setExpandedDay]=useState(null);const[activeTab,setActiveTab]=useState("log");
-  const usedCoins=useMemo(()=>[...new Set(trades.map(t=>t.ticker).filter(Boolean))],[trades]);
-  const prevCapPctRef=useRef(null);
+/* ── DASHBOARD ───────────────────────────────────────── */
+function Dashboard({startCap, setStartCap}) {
+  const [trades, setTrades] = useState([]);
+  const [capEdit, setCapEdit] = useState(false);
+  const [capInput, setCapInput] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [date, setDate] = useState(todayStr());
+  const [ticker, setTicker] = useState("");
+  const [direction, setDirection] = useState("long");
+  const [result, setResult] = useState("");
+  const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [expandedDay, setExpandedDay] = useState(null);
+  const [activeTab, setActiveTab] = useState("log");
+  const usedCoins = useMemo(() => [...new Set(trades.map(t=>t.ticker).filter(Boolean))], [trades]);
+  const prevPctRef = useRef(null);
 
-  const fetchData=useCallback(async()=>{
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    try{
-      const tok=store.getToken();
-      const[td,sd]=await Promise.all([
-        api.db("trades?select=*&order=date.desc,created_at.desc","GET",null,tok),
-        api.db("user_settings?select=*","GET",null,tok)
+    try {
+      const tok = store.getTok();
+      const [td, sd] = await Promise.all([
+        dbFetch("/rest/v1/trades?select=*&order=date.desc,created_at.desc", "GET", null, tok),
+        dbFetch("/rest/v1/user_settings?select=*", "GET", null, tok)
       ]);
       setTrades(td||[]);
-      if(sd?.length>0){const c=parseFloat(sd[0].starting_capital);setStartCap(c);}
-    }catch(e){toast("Failed to load data: "+e.message,"error");}
-    finally{setLoading(false);}
-  },[]);
-  useEffect(()=>{fetchData();},[fetchData]);
+      if (sd?.length > 0) setStartCap(parseFloat(sd[0].starting_capital));
+    } catch(e) { showToast("Failed to load: "+e.message, "error"); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Capital notification
-  const days=useMemo(()=>{
-    const map={};trades.forEach(t=>{if(!map[t.date])map[t.date]={date:t.date,trades:[],total:0};map[t.date].trades.push(t);map[t.date].total+=parseFloat(t.result)||0;});
+  const days = useMemo(() => {
+    const map = {};
+    trades.forEach(t => { if(!map[t.date])map[t.date]={date:t.date,trades:[],total:0}; map[t.date].trades.push(t); map[t.date].total+=parseFloat(t.result)||0; });
     return Object.values(map).sort((a,b)=>b.date.localeCompare(a.date));
-  },[trades]);
-  const totalPNL=days.reduce((s,d)=>s+d.total,0);
-  const currentCap=startCap+totalPNL;
-  const capPct=startCap>0?((currentCap-startCap)/startCap*100):0;
+  }, [trades]);
 
-  useEffect(()=>{
-    if(loading||!startCap||trades.length===0)return;
-    const prev=prevCapPctRef.current;
-    if(prev===null){prevCapPctRef.current=capPct;return;}
-    if(prev<CFG.GAIN_NOTIF_PCT&&capPct>=CFG.GAIN_NOTIF_PCT){
-      toast(`Congratulations! Your capital has grown by ${capPct.toFixed(1)}%. Consider taking a break and securing your profits.`,"success",10000);
-    } else if(prev>-CFG.LOSS_NOTIF_PCT&&capPct<=-CFG.LOSS_NOTIF_PCT){
-      toast(`Your capital is down ${Math.abs(capPct).toFixed(1)}%. Consider taking a break to protect your remaining capital.`,"warning",10000);
+  const totalPNL = days.reduce((s,d) => s+d.total, 0);
+  const currentCap = startCap + totalPNL;
+  const capPct = startCap > 0 ? ((currentCap-startCap)/startCap*100) : 0;
+
+  // Notifications
+  useEffect(() => {
+    if (loading || !startCap || !trades.length) return;
+    const prev = prevPctRef.current;
+    if (prev === null) { prevPctRef.current = capPct; return; }
+    if (prev < GAIN_PCT && capPct >= GAIN_PCT) {
+      showToast(`Congratulations! Your capital is up ${capPct.toFixed(1)}%. Great work — consider taking a break and securing your profits!`, "success", 10000);
+    } else if (prev > -LOSS_PCT && capPct <= -LOSS_PCT) {
+      showToast(`Your capital is down ${Math.abs(capPct).toFixed(1)}%. Consider taking a break to protect your remaining capital.`, "warning", 10000);
     }
-    prevCapPctRef.current=capPct;
-  },[capPct,loading,startCap,trades.length]);
+    prevPctRef.current = capPct;
+  }, [capPct, loading, startCap, trades.length]);
 
-  const addTrade=async()=>{
-    const r=parseFloat(result);
-    if(!isValidNum(r)){setFormError("Enter a valid result.");return;}
-    if(!ticker.trim()){setFormError("Enter a ticker symbol.");return;}
-    if(!date){setFormError("Select a date.");return;}
-    const clean=sanitize(ticker).toUpperCase().replace(/[^A-Z0-9]/g,"");
-    if(!clean){setFormError("Invalid ticker symbol.");return;}
-    setFormError("");setSaving(true);
-    try{
-      const tok=store.getToken(),uid=store.getUID();
-      const row=await api.db("trades","POST",{user_id:uid,date,ticker:clean,result:r,note:direction},tok,{"Prefer":"return=representation"});
-      setTrades(p=>[row[0],...p]);setTicker("");setResult("");
-    }catch(e){setFormError(e.message);}
-    finally{setSaving(false);}
+  const addTrade = async () => {
+    const r = parseFloat(result);
+    if (isNaN(r)) { setFormError("Enter a valid result."); return; }
+    if (!ticker.trim()) { setFormError("Enter a ticker."); return; }
+    const t = ticker.toUpperCase().replace(/[^A-Z0-9]/g,"");
+    if (!t) { setFormError("Invalid ticker."); return; }
+    setFormError(""); setSaving(true);
+    try {
+      const tok = store.getTok(), uid = store.getUID();
+      const row = await dbFetch("/rest/v1/trades", "POST", {user_id:uid,date,ticker:t,result:r,note:direction}, tok, {"Prefer":"return=representation"});
+      setTrades(p => [row[0], ...p]); setTicker(""); setResult("");
+    } catch(e) { setFormError(e.message); }
+    finally { setSaving(false); }
   };
 
-  const deleteTrade=async(id)=>{
-    if(!id)return;
-    try{await api.db(`trades?id=eq.${id}`,"DELETE",null,store.getToken());setTrades(p=>p.filter(t=>t.id!==id));}
-    catch(e){toast("Delete failed: "+e.message,"error");}
+  const deleteTrade = async id => {
+    try { await dbFetch(`/rest/v1/trades?id=eq.${id}`, "DELETE", null, store.getTok()); setTrades(p => p.filter(t=>t.id!==id)); }
+    catch(e) { showToast("Delete failed: "+e.message, "error"); }
   };
 
-  const saveCapital=async()=>{
-    const v=parseFloat(capInput);
-    if(!isValidNum(v)||v<=0){toast("Enter a valid positive number.","error");return;}
-    try{
-      const uid=store.getUID();
-      await api.upsert("user_settings",{user_id:uid,starting_capital:v},store.getToken());
-      setStartCap(v);setCapEdit(false);prevCapPctRef.current=null;
-      toast("Starting capital updated.","success");
-    }catch(e){toast("Could not save: "+e.message,"error");}
+  const saveCapital = async () => {
+    const v = parseFloat(capInput);
+    if (isNaN(v) || v <= 0) { showToast("Enter a valid positive number.", "error"); return; }
+    try {
+      await upsert("user_settings", {user_id:store.getUID(), starting_capital:v}, store.getTok());
+      setStartCap(v); setCapEdit(false); prevPctRef.current = null;
+      showToast("Starting capital updated.", "success");
+    } catch(e) { showToast("Could not save: "+e.message, "error"); }
   };
 
-  const downloadCSV=()=>{
-    if(!trades.length){toast("No trades to export.","info");return;}
-    const rows=[["Date","Ticker","Direction","Result ($)"]];
+  const downloadCSV = () => {
+    if (!trades.length) { showToast("No trades to export.", "info"); return; }
+    const rows = [["Date","Ticker","Direction","Result ($)"]];
     [...trades].sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>rows.push([t.date,t.ticker||"",t.note||"",t.result]));
-    const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
-    const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=url;a.download=`tradelog_${todayStr()}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-    toast("CSV downloaded.","success");
+    const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href=url; a.download=`tradelog_${todayStr()}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    showToast("CSV downloaded.", "success");
   };
 
-  const winDays=days.filter(d=>d.total>0).length,lossDays=days.filter(d=>d.total<0).length;
-  const winRate=days.length?(winDays/days.length*100).toFixed(1):"0.0";
-  const best=days.length?Math.max(...days.map(d=>d.total)):0,worst=days.length?Math.min(...days.map(d=>d.total)):0;
-  const monthlyData=useMemo(()=>{
-    const map={};trades.forEach(t=>{const m=t.date.slice(0,7);if(!map[m])map[m]={month:m,total:0,count:0};map[m].total+=parseFloat(t.result)||0;map[m].count++;});
-    return Object.values(map).sort((a,b)=>a.month.localeCompare(b.month)).slice(-12);
-  },[trades]);
-  const maxAbsM=Math.max(...monthlyData.map(d=>Math.abs(d.total)),1);
+  const winDays = days.filter(d=>d.total>0).length;
+  const lossDays = days.filter(d=>d.total<0).length;
+  const winRate = days.length ? (winDays/days.length*100).toFixed(1) : "0.0";
+  const best = days.length ? Math.max(...days.map(d=>d.total)) : 0;
+  const worst = days.length ? Math.min(...days.map(d=>d.total)) : 0;
 
-  return(
-    <main className="page-wrap" style={{maxWidth:1060,margin:"0 auto",padding:"20px 16px",display:"flex",flexDirection:"column",gap:16}} aria-label="Dashboard">
+  const monthlyData = useMemo(() => {
+    const map = {};
+    trades.forEach(t => { const m=t.date.slice(0,7); if(!map[m])map[m]={month:m,total:0,count:0}; map[m].total+=parseFloat(t.result)||0; map[m].count++; });
+    return Object.values(map).sort((a,b)=>a.month.localeCompare(b.month)).slice(-12);
+  }, [trades]);
+  const maxAbsM = Math.max(...monthlyData.map(d=>Math.abs(d.total)), 1);
+
+  return (
+    <main className="pg" style={{maxWidth:1060,margin:"0 auto",padding:"18px 16px",display:"flex",flexDirection:"column",gap:14}}>
       {/* Stats */}
-      <div className="stats-grid fade-up" style={{display:"grid",gridTemplateColumns:"1.3fr 1fr 1fr 1fr",gap:12}}>
-        {/* Capital card */}
-        <div className="card" style={{padding:"20px",background:"linear-gradient(135deg,#1E3A8A,#2563EB)",color:"#fff"}} role="region" aria-label="Capital tracker">
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
+      <div className="stats-cols fade-up" style={{display:"grid",gridTemplateColumns:"1.3fr 1fr 1fr 1fr",gap:11}}>
+        {/* Capital */}
+        <div className="card" style={{padding:"19px",background:"linear-gradient(135deg,#1E3A8A,#2563EB)",color:"#fff"}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:9}}>
             <div>
-              <div className="form-label" style={{color:"rgba(255,255,255,0.6)",marginBottom:5}}>Current Capital</div>
-              <div style={{fontFamily:"'Sora',sans-serif",fontSize:26,fontWeight:700,letterSpacing:"-0.5px"}}>{fmt(currentCap)}</div>
+              <div className="flabel" style={{color:"rgba(255,255,255,0.55)",marginBottom:4}}>Current Capital</div>
+              <div style={{fontFamily:"'Sora',sans-serif",fontSize:25,fontWeight:700,letterSpacing:"-0.5px"}}>{fmt(currentCap)}</div>
             </div>
           </div>
-          <div style={{marginBottom:12}}>
-            <span style={{background:capPct>=0?"rgba(16,185,129,0.22)":"rgba(239,68,68,0.22)",color:capPct>=0?"#6EE7B7":"#FCA5A5",borderRadius:5,padding:"2px 9px",fontSize:12,fontWeight:700}} aria-label={`${capPct>=0?"Up":"Down"} ${Math.abs(capPct).toFixed(2)} percent`}>
+          <div style={{marginBottom:11}}>
+            <span style={{background:capPct>=0?"rgba(16,185,129,0.22)":"rgba(239,68,68,0.22)",color:capPct>=0?"#6EE7B7":"#FCA5A5",borderRadius:5,padding:"2px 8px",fontSize:12,fontWeight:700}}>
               {capPct>=0?"▲":"▼"} {Math.abs(capPct).toFixed(2)}%
             </span>
           </div>
-          <div style={{borderTop:"1px solid rgba(255,255,255,0.15)",paddingTop:11,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6}}>
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.15)",paddingTop:10,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:5}}>
             <div><div style={{fontSize:9,opacity:0.5,textTransform:"uppercase",letterSpacing:0.5,marginBottom:1}}>Starting Capital</div><div style={{fontWeight:700,fontSize:13}}>{fmt(startCap)}</div></div>
             {!capEdit
-              ?<button onClick={()=>{setCapEdit(true);setCapInput(startCap.toString());}} className="btn btn-sm" style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontSize:11}}>Edit</button>
-              :<div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                <input type="number" value={capInput} onChange={e=>setCapInput(e.target.value)} aria-label="New starting capital" style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.25)",color:"#fff",width:88,borderRadius:7,padding:"5px 8px",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13}}/>
-                <button onClick={saveCapital} className="btn btn-sm" style={{background:"#fff",color:"var(--blue-dark)",border:"none",fontWeight:700}}>Save</button>
-                <button onClick={()=>setCapEdit(false)} className="btn btn-sm" style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#fff"}} aria-label="Cancel">×</button>
-              </div>
+              ? <button onClick={()=>{setCapEdit(true);setCapInput(startCap.toString());}} className="btn" style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontSize:11,padding:"5px 12px"}}>Edit</button>
+              : <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                  <input type="number" value={capInput} onChange={e=>setCapInput(e.target.value)} style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.25)",color:"#fff",width:86,borderRadius:7,padding:"5px 8px",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13}}/>
+                  <button onClick={saveCapital} className="btn" style={{background:"#fff",color:"var(--blue-dark)",border:"none",fontWeight:700,padding:"5px 11px",fontSize:12}}>Save</button>
+                  <button onClick={()=>setCapEdit(false)} className="btn" style={{background:"rgba(255,255,255,0.1)",border:"none",color:"#fff",padding:"5px 9px",fontSize:12}}>×</button>
+                </div>
             }
           </div>
         </div>
 
         {[{label:"Total PNL",value:`${totalPNL>=0?"+":""}${fmt(totalPNL)}`,sub:`${trades.length} trades · ${days.length} days`,color:totalPNL>=0?"var(--green-dark)":"var(--red-dark)"},
           {label:"Day Win Rate",value:`${winRate}%`,sub:`${winDays} wins · ${lossDays} losses`,color:"var(--blue)"},
-          {label:"Best Day",value:fmt(best),sub:`Worst: ${fmt(worst)}`,color:"var(--green-dark)"}].map(({label,value,sub,color})=>(
-          <div key={label} className="card" style={{padding:"18px"}} role="region" aria-label={label}>
-            <div className="form-label" style={{marginBottom:9}}>{label}</div>
-            <div style={{fontFamily:"'Sora',sans-serif",fontSize:20,fontWeight:700,color,marginBottom:4}}>{value}</div>
+          {label:"Best Day",value:fmt(best),sub:`Worst: ${fmt(worst)}`,color:"var(--green-dark)"}].map(({label,value,sub,color}) => (
+          <div key={label} className="card" style={{padding:"17px"}}>
+            <div className="flabel" style={{marginBottom:8}}>{label}</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:19,fontWeight:700,color,marginBottom:3}}>{value}</div>
             <div style={{fontSize:11,color:"var(--gray-400)"}}>{sub}</div>
           </div>
         ))}
       </div>
 
       {/* Log form */}
-      <div className="card fade-up" style={{padding:"18px 20px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:13,flexWrap:"wrap",gap:8}}>
+      <div className="card fade-up" style={{padding:"17px 18px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:7}}>
           <h2 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:14,color:"var(--gray-800)"}}>Log a Trade</h2>
-          <div style={{display:"flex",gap:7,alignItems:"center",flexWrap:"wrap"}}>
-            {formError&&<span style={{fontSize:12,color:"var(--red-dark)",fontWeight:600}} role="alert">{formError}</span>}
-            <button onClick={downloadCSV} className="btn btn-ghost btn-sm">Download CSV</button>
+          <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+            {formError && <span style={{fontSize:12,color:"var(--red-dark)",fontWeight:600}}>{formError}</span>}
+            <button onClick={downloadCSV} className="btn btn-ghost" style={{fontSize:12,padding:"6px 13px"}}>Download CSV</button>
           </div>
         </div>
-        <div className="form-grid" style={{display:"grid",gridTemplateColumns:"110px 1fr 140px 120px auto",gap:9,alignItems:"flex-end"}}>
-          <div><label htmlFor="tdate" className="form-label">Date</label><input id="tdate" type="date" value={date} max={todayStr()} onChange={e=>setDate(e.target.value)}/></div>
-          <div><label htmlFor="tticker" className="form-label">Ticker</label><CoinInput value={ticker} onChange={setTicker} usedCoins={usedCoins}/></div>
-          <div><label htmlFor="tdir" className="form-label">Direction</label>
-            <select id="tdir" value={direction} onChange={e=>setDirection(e.target.value)} style={{color:direction==="long"?"var(--green-dark)":"var(--red-dark)",fontWeight:700}}>
+        <div className="form-cols" style={{display:"grid",gridTemplateColumns:"108px 1fr 138px 118px auto",gap:8,alignItems:"flex-end"}}>
+          <div><label className="flabel">Date</label><input type="date" value={date} max={todayStr()} onChange={e=>setDate(e.target.value)}/></div>
+          <div><label className="flabel">Ticker</label><CoinInput value={ticker} onChange={setTicker} usedCoins={usedCoins}/></div>
+          <div><label className="flabel">Direction</label>
+            <select value={direction} onChange={e=>setDirection(e.target.value)} style={{color:direction==="long"?"var(--green-dark)":"var(--red-dark)",fontWeight:700}}>
               <option value="long">LONG</option><option value="short">SHORT</option>
             </select>
           </div>
-          <div><label htmlFor="tres" className="form-label">Result ($)</label><input id="tres" type="number" placeholder="120 or -45" value={result} onChange={e=>setResult(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTrade()}/></div>
-          <button onClick={addTrade} disabled={saving} className="btn btn-primary" style={{padding:"10px 16px"}} aria-label="Add trade">
-            {saving?<Spinner size={14}/>:"+ Add"}
+          <div><label className="flabel">Result ($)</label><input type="number" placeholder="120 or -45" value={result} onChange={e=>setResult(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTrade()}/></div>
+          <button onClick={addTrade} disabled={saving} className="btn btn-blue" style={{padding:"10px 15px"}}>
+            {saving ? <Spinner size={14}/> : "+ Add"}
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{display:"flex",gap:5}} role="tablist" aria-label="View selector">
-        {[["log","Daily Log"],["chart","Monthly Chart"]].map(([t,label])=>(
-          <button key={t} role="tab" aria-selected={activeTab===t} onClick={()=>setActiveTab(t)}
-            className={`btn btn-sm ${activeTab===t?"btn-primary":"btn-ghost"}`}>{label}</button>
+      <div style={{display:"flex",gap:5}}>
+        {[["log","Daily Log"],["chart","Monthly Chart"]].map(([t,label]) => (
+          <button key={t} onClick={()=>setActiveTab(t)} className={`btn ${activeTab===t?"btn-blue":"btn-ghost"}`} style={{fontSize:13,padding:"7px 15px"}}>{label}</button>
         ))}
       </div>
 
-      {/* Monthly chart */}
-      {activeTab==="chart"&&(
-        <div className="card fade-up" style={{padding:"20px"}} role="tabpanel" aria-label="Monthly chart">
-          <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,marginBottom:3}}>Monthly PNL Overview</h3>
-          <p style={{fontSize:12,color:"var(--gray-400)",marginBottom:18}}>Last {monthlyData.length} months</p>
-          {monthlyData.length===0?<p style={{textAlign:"center",color:"var(--gray-400)",padding:"32px 0"}}>No data yet.</p>:(
+      {/* Chart */}
+      {activeTab==="chart" && (
+        <div className="card fade-up" style={{padding:"18px"}}>
+          <h3 style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,marginBottom:2}}>Monthly PNL Overview</h3>
+          <p style={{fontSize:12,color:"var(--gray-400)",marginBottom:16}}>Last {monthlyData.length} months</p>
+          {monthlyData.length === 0 ? <p style={{textAlign:"center",color:"var(--gray-400)",padding:"30px 0"}}>No data yet.</p> : (
             <>
-              <div style={{display:"flex",alignItems:"flex-end",gap:7,height:150,marginBottom:12}} role="img" aria-label="Monthly PNL bar chart">
-                {monthlyData.map(d=>{const pos=d.total>=0,h=Math.max(7,(Math.abs(d.total)/maxAbsM)*130);return(
+              <div style={{display:"flex",alignItems:"flex-end",gap:6,height:140,marginBottom:11}}>
+                {monthlyData.map(d => { const pos=d.total>=0, h=Math.max(6,(Math.abs(d.total)/maxAbsM)*120); return (
                   <div key={d.month} title={`${fmtMonth(d.month)}: ${fmt(d.total)}`} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%",gap:4}}>
                     <div style={{fontSize:9,color:pos?"var(--green-dark)":"var(--red-dark)",fontWeight:700,whiteSpace:"nowrap"}}>{fmtShort(d.total)}</div>
-                    <div style={{width:"100%",height:h,borderRadius:pos?"6px 6px 2px 2px":"2px 2px 6px 6px",background:pos?"linear-gradient(180deg,#34D399,#10B981)":"linear-gradient(0deg,#F87171,#EF4444)",transition:"height 0.4s ease"}} aria-label={`${fmtMonth(d.month)}: ${fmt(d.total)}`}/>
+                    <div style={{width:"100%",height:h,borderRadius:pos?"6px 6px 2px 2px":"2px 2px 6px 6px",background:pos?"linear-gradient(180deg,#34D399,#10B981)":"linear-gradient(0deg,#F87171,#EF4444)"}}/>
                     <div style={{fontSize:9,color:"var(--gray-400)"}}>{fmtMonth(d.month)}</div>
-                  </div>);})}
+                  </div>
+                ); })}
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9}}>
-                {monthlyData.slice(-3).reverse().map(d=>(
-                  <div key={d.month} style={{background:d.total>=0?"var(--green-light)":"var(--red-light)",borderRadius:9,padding:"11px 13px",border:`1px solid ${d.total>=0?"#A7F3D0":"#FECACA"}`}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+                {monthlyData.slice(-3).reverse().map(d => (
+                  <div key={d.month} style={{background:d.total>=0?"var(--green-light)":"var(--red-light)",borderRadius:9,padding:"10px 12px",border:`1px solid ${d.total>=0?"#A7F3D0":"#FECACA"}`}}>
                     <div style={{fontSize:11,color:"var(--gray-400)",fontWeight:600,marginBottom:2}}>{fmtMonth(d.month)}</div>
                     <div style={{fontFamily:"'Sora',sans-serif",fontWeight:700,fontSize:15,color:d.total>=0?"var(--green-dark)":"var(--red-dark)"}}>{d.total>=0?"+":""}{fmt(d.total)}</div>
                     <div style={{fontSize:10,color:"var(--gray-400)",marginTop:1}}>{d.count} trades</div>
@@ -961,40 +906,35 @@ function Dashboard({startCap,setStartCap,onCapSave}){
       )}
 
       {/* Daily log */}
-      {activeTab==="log"&&(
-        <div className="fade-up" style={{display:"flex",flexDirection:"column",gap:8}} role="tabpanel" aria-label="Daily log">
-          {loading&&(
-            <div aria-busy="true" style={{display:"flex",flexDirection:"column",gap:8}}>
-              {[1,2,3].map(i=><div key={i} className="skeleton" style={{height:64,borderRadius:14}}/>)}
-            </div>
-          )}
-          {!loading&&days.length===0&&<div className="card" style={{padding:"44px",textAlign:"center",color:"var(--gray-400)"}}>No trades yet. Log your first trade above.</div>}
-          {!loading&&days.map(day=>(
-            <div key={day.date} className="day-row" onClick={()=>setExpandedDay(expandedDay===day.date?null:day.date)} role="button" aria-expanded={expandedDay===day.date} aria-label={`${fmtDate(day.date)}, PNL ${fmt(day.total)}`} tabIndex={0} onKeyDown={e=>(e.key==="Enter"||e.key===" ")&&setExpandedDay(expandedDay===day.date?null:day.date)}>
-              <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:12,alignItems:"center",padding:"13px 18px"}}>
+      {activeTab==="log" && (
+        <div className="fade-up" style={{display:"flex",flexDirection:"column",gap:7}}>
+          {loading && [1,2,3].map(i => <div key={i} style={{height:62,borderRadius:13,background:"var(--gray-100)",animation:"fadeUp 0.3s ease both"}}/>)}
+          {!loading && days.length===0 && <div className="card" style={{padding:"42px",textAlign:"center",color:"var(--gray-400)"}}>No trades yet. Log your first trade above.</div>}
+          {!loading && days.map(day => (
+            <div key={day.date} className="day-row" onClick={()=>setExpandedDay(expandedDay===day.date?null:day.date)}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:11,alignItems:"center",padding:"12px 17px"}}>
                 <div>
                   <div style={{fontWeight:700,fontSize:14,color:"var(--gray-900)"}}>{fmtDate(day.date)}</div>
                   <div style={{fontSize:11,color:"var(--gray-400)",marginTop:2}}>{day.trades.length} trade{day.trades.length!==1?"s":""}{day.trades.length>0&&` · ${[...new Set(day.trades.map(t=>t.ticker).filter(Boolean))].slice(0,3).join(", ")}`}</div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div className="form-label" style={{marginBottom:3,textAlign:"right"}}>Day PNL</div>
-                  <Badge type={day.total>0?"pos":day.total<0?"neg":"zero"}>{day.total>0?"+":""}{fmt(day.total)}</Badge>
+                  <div className="flabel" style={{marginBottom:3,textAlign:"right"}}>Day PNL</div>
+                  <Badge type={day.total>0?"p":day.total<0?"n":"z"}>{day.total>0?"+":""}{fmt(day.total)}</Badge>
                 </div>
-                <div style={{width:28,height:28,borderRadius:"50%",background:"var(--gray-100)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"var(--gray-400)",transition:"transform var(--transition)",transform:expandedDay===day.date?"rotate(180deg)":"none"}} aria-hidden="true">▾</div>
+                <div style={{width:26,height:26,borderRadius:"50%",background:"var(--gray-100)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"var(--gray-400)",transition:"transform 0.15s",transform:expandedDay===day.date?"rotate(180deg)":"none"}}>▾</div>
               </div>
-
-              {expandedDay===day.date&&(
-                <div style={{background:"var(--gray-50)",borderTop:"1px solid var(--gray-100)",padding:"6px 18px 13px"}} role="region" aria-label={`Trades for ${fmtDate(day.date)}`}>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 85px 125px 44px",gap:9,padding:"7px 11px",fontSize:9,color:"var(--gray-400)",fontWeight:600,textTransform:"uppercase",letterSpacing:0.4}}>
-                    <div>Ticker</div><div>Direction</div><div>Result</div><div/>
+              {expandedDay===day.date && (
+                <div style={{background:"var(--gray-50)",borderTop:"1px solid var(--gray-100)",padding:"5px 17px 12px"}} onClick={e=>e.stopPropagation()}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 80px 120px 42px",gap:8,padding:"6px 10px",fontSize:9,color:"var(--gray-400)",fontWeight:600,textTransform:"uppercase",letterSpacing:0.4}}>
+                    <div>Ticker</div><div>Dir</div><div>Result</div><div/>
                   </div>
-                  {day.trades.map(t=>(
-                    <div key={t.id} onClick={e=>e.stopPropagation()} style={{display:"grid",gridTemplateColumns:"1fr 85px 125px 44px",gap:9,alignItems:"center",background:"var(--white)",border:"1px solid var(--gray-200)",borderRadius:8,padding:"9px 11px",marginBottom:5,fontSize:13}}>
+                  {day.trades.map(t => (
+                    <div key={t.id} style={{display:"grid",gridTemplateColumns:"1fr 80px 120px 42px",gap:8,alignItems:"center",background:"#fff",border:"1px solid var(--gray-200)",borderRadius:8,padding:"8px 10px",marginBottom:4,fontSize:13}}>
                       <div style={{fontWeight:700,color:"var(--blue)",fontSize:13}}>{t.ticker||"—"}</div>
-                      <Badge type={t.note==="long"?"long":"short"}>{t.note==="long"?"LONG":"SHORT"}</Badge>
-                      <Badge type={parseFloat(t.result)>0?"pos":parseFloat(t.result)<0?"neg":"zero"}>{parseFloat(t.result)>0?"+":""}{fmt(t.result)}</Badge>
-                      <button onClick={()=>deleteTrade(t.id)} className="btn btn-sm" title="Delete trade" aria-label={`Delete ${t.ticker} trade`}
-                        style={{background:"none",border:"1px solid var(--gray-200)",color:"var(--gray-400)",padding:"4px 8px",fontSize:12}}
+                      <Badge type={t.note==="long"?"l":"s"}>{t.note==="long"?"LONG":"SHORT"}</Badge>
+                      <Badge type={parseFloat(t.result)>0?"p":parseFloat(t.result)<0?"n":"z"}>{parseFloat(t.result)>0?"+":""}{fmt(t.result)}</Badge>
+                      <button onClick={()=>deleteTrade(t.id)} className="btn" title="Delete"
+                        style={{background:"none",border:"1px solid var(--gray-200)",color:"var(--gray-400)",padding:"3px 7px",fontSize:12}}
                         onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.color="var(--red-dark)";}}
                         onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--gray-200)";e.currentTarget.style.color="var(--gray-400)";}}>
                         ✕
@@ -1011,110 +951,106 @@ function Dashboard({startCap,setStartCap,onCapSave}){
   );
 }
 
-/* ─── ROOT ───────────────────────────────────────────────── */
-function App(){
-  const [token,setToken]=useState(()=>store.getToken());
-  const [profile,setProfile]=useState(null);
-  const [trades,setTrades]=useState([]);
-  const [startCap,setStartCap]=useState(10000);
-  const [page,setPage]=useState("dashboard");
-  const [menuOpen,setMenuOpen]=useState(false);
+/* ── ROOT ────────────────────────────────────────────── */
+function App() {
+  const [token, setToken] = useState(() => store.getTok());
+  const [profile, setProfile] = useState(null);
+  const [trades, setTrades] = useState([]);
+  const [startCap, setStartCap] = useState(10000);
+  const [page, setPage] = useState("dashboard");
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const onLogin=useCallback(tok=>{store.setToken(tok);setToken(tok);},[]);
-  const onLogout=useCallback(()=>{store.clearTokens();setToken(null);setProfile(null);setTrades([]);setPage("dashboard");},[]);
+  const onLogin = tok => { store.setTok(tok); setToken(tok); };
+  const onLogout = () => { store.clear(); setToken(null); setProfile(null); setTrades([]); setPage("dashboard"); };
 
-  useEffect(()=>{
-    if(!token)return;
-    const tok=store.getToken();
+  useEffect(() => {
+    if (!token) return;
+    const tok = store.getTok();
     Promise.all([
-      api.db("profiles?select=*","GET",null,tok),
-      api.db("trades?select=*&order=date.desc","GET",null,tok)
-    ]).then(([p,t])=>{if(p?.length>0)setProfile(p[0]);setTrades(t||[]);}).catch(()=>{});
-  },[token]);
+      dbFetch("/rest/v1/profiles?select=*", "GET", null, tok),
+      dbFetch("/rest/v1/trades?select=*&order=date.desc", "GET", null, tok)
+    ]).then(([p, t]) => { if (p?.length > 0) setProfile(p[0]); setTrades(t||[]); }).catch(() => {});
+  }, [token]);
 
-  useEffect(()=>{setMenuOpen(false);},[page]);
+  useEffect(() => { setMenuOpen(false); }, [page]);
 
-  const ini=getInitials(profile);
-  const displayName=profile?.full_name||"Trader";
-  const bdayStr=profile?.birthday?new Date(profile.birthday+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
+  const displayName = profile?.full_name || "Trader";
+  const ini = getInitials(profile?.full_name || "");
+  const bdayStr = profile?.birthday ? new Date(profile.birthday+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}) : "";
 
-  if(!token)return(
-    <ToastProvider>
+  if (!token) return (
+    <>
+      <ToastContainer/>
       <AuthScreen onLogin={onLogin}/>
-    </ToastProvider>
+    </>
   );
 
-  return(
-    <ToastProvider>
-      <div style={{minHeight:"100vh",background:"var(--gray-50)",display:"flex",flexDirection:"column"}}>
-        {/* Skip link for accessibility */}
-        <a href="#main-content" style={{position:"absolute",top:-40,left:0,background:"var(--blue)",color:"#fff",padding:"8px 12px",zIndex:9999,fontSize:13,borderRadius:"0 0 8px 0",textDecoration:"none"}} onFocus={e=>e.target.style.top="0"} onBlur={e=>e.target.style.top="-40px"}>Skip to content</a>
+  return (
+    <div style={{minHeight:"100vh",background:"var(--gray-50)",display:"flex",flexDirection:"column"}}>
+      <ToastContainer/>
 
-        {/* Navbar */}
-        <header style={{background:"var(--white)",borderBottom:"1px solid var(--gray-200)",position:"sticky",top:0,zIndex:200,boxShadow:"var(--shadow-xs)"}}>
-          <div style={{maxWidth:1060,margin:"0 auto",padding:"0 16px",display:"flex",alignItems:"center",height:"var(--navbar-h)",gap:10}}>
-            {/* Logo */}
-            <div style={{display:"flex",alignItems:"center",gap:7,flexShrink:0}}>
-              <div style={{width:30,height:30,background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,color:"#fff"}} aria-hidden="true">◈</div>
-              <span style={{fontFamily:"'Sora',sans-serif",fontSize:17,fontWeight:700,color:"var(--gray-900)"}}>TradeLog</span>
-            </div>
-
-            {/* Desktop nav */}
-            <nav aria-label="Main navigation" style={{display:"flex",gap:3,flex:1,justifyContent:"center"}} className="hide-sm">
-              {[["dashboard","Dashboard"],["calculator","Calculator"],["profile","Profile"]].map(([p,label])=>(
-                <button key={p} onClick={()=>setPage(p)} className={`nav-btn ${page===p?"active":""}`} aria-current={page===p?"page":undefined}>{label}</button>
-              ))}
-            </nav>
-
-            {/* Profile chip */}
-            <button onClick={()=>setPage("profile")} style={{display:"flex",alignItems:"center",gap:7,background:"none",border:"none",cursor:"pointer",padding:"4px 6px",borderRadius:9,transition:"background var(--transition)",flexShrink:0}} onMouseEnter={e=>e.currentTarget.style.background="var(--gray-100)"} onMouseLeave={e=>e.currentTarget.style.background=""} aria-label={`Profile: ${displayName}`} className="hide-sm">
-              <div style={{width:32,height:32,borderRadius:"50%",border:"2px solid var(--blue-mid)",overflow:"hidden",background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:11,flexShrink:0}}>
-                {profile?.avatar_url?<img src={profile.avatar_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>{e.target.style.display="none";}}/>:<span>{ini}</span>}
-              </div>
-              <div style={{lineHeight:1.3,textAlign:"left"}}>
-                <div style={{fontWeight:700,fontSize:13,color:"var(--gray-900)",maxWidth:130,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{displayName}</div>
-                {bdayStr&&<div style={{fontSize:10,color:"var(--gray-400)"}}>{bdayStr}</div>}
-              </div>
-            </nav>
-
-            {/* Mobile controls */}
-            <div style={{display:"flex",alignItems:"center",gap:8,marginLeft:"auto",flexShrink:0}} className="show-sm-flex">
-              <button onClick={()=>setPage("profile")} style={{width:30,height:30,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:11,border:"none",cursor:"pointer",flexShrink:0}} aria-label="Go to profile">
-                {profile?.avatar_url?<img src={profile.avatar_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:<span>{ini}</span>}
-              </button>
-              <button onClick={()=>setMenuOpen(p=>!p)} className="btn btn-ghost btn-sm" aria-label={menuOpen?"Close menu":"Open menu"} aria-expanded={menuOpen} aria-controls="mobile-menu">
-                {menuOpen?"✕":"Menu"}
-              </button>
-            </div>
+      {/* Navbar */}
+      <header style={{background:"#fff",borderBottom:"1px solid var(--gray-200)",position:"sticky",top:0,zIndex:200,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
+        <div style={{maxWidth:1060,margin:"0 auto",padding:"0 16px",display:"flex",alignItems:"center",height:58,gap:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:7,flexShrink:0}}>
+            <div style={{width:29,height:29,background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,color:"#fff"}}>◈</div>
+            <span style={{fontFamily:"'Sora',sans-serif",fontSize:17,fontWeight:700,color:"var(--gray-900)"}}>TradeLog</span>
           </div>
 
-          {/* Mobile dropdown */}
-          {menuOpen&&(
-            <nav id="mobile-menu" style={{background:"var(--white)",borderTop:"1px solid var(--gray-100)",padding:"8px 16px 12px"}} aria-label="Mobile navigation">
-              {[["dashboard","Dashboard"],["calculator","Calculator"],["profile","Profile"]].map(([p,label])=>(
-                <button key={p} onClick={()=>setPage(p)} style={{display:"block",width:"100%",padding:"10px 13px",borderRadius:8,border:"none",fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,cursor:"pointer",textAlign:"left",background:page===p?"var(--blue-light)":"transparent",color:page===p?"var(--blue)":"var(--gray-600)",marginBottom:3}} aria-current={page===p?"page":undefined}>{label}</button>
-              ))}
-            </nav>
-          )}
-        </header>
+          {/* Desktop nav */}
+          <nav style={{display:"flex",gap:3,flex:1,justifyContent:"center"}} className="hide-mob">
+            {[["dashboard","Dashboard"],["calculator","Calculator"],["profile","Profile"]].map(([p,label]) => (
+              <button key={p} onClick={()=>setPage(p)} className={`nav-btn ${page===p?"active":""}`}>{label}</button>
+            ))}
+          </nav>
 
-        {/* Page content */}
-        <div id="main-content" style={{flex:1,paddingTop:8,paddingBottom:4}}>
-          {page==="dashboard"&&<Dashboard startCap={startCap} setStartCap={setStartCap}/>}
-          {page==="calculator"&&<CalcPage/>}
-          {page==="profile"&&<ProfilePage profile={profile} setProfile={setProfile} trades={trades} onLogout={onLogout}/>}
+          {/* Profile chip - desktop */}
+          <button onClick={()=>setPage("profile")} className="hide-mob" style={{display:"flex",alignItems:"center",gap:7,background:"none",border:"none",cursor:"pointer",padding:"4px 7px",borderRadius:9,transition:"background 0.15s",flexShrink:0}}
+            onMouseEnter={e=>e.currentTarget.style.background="var(--gray-100)"}
+            onMouseLeave={e=>e.currentTarget.style.background=""}>
+            <div style={{width:31,height:31,borderRadius:"50%",border:"2px solid var(--blue-mid)",overflow:"hidden",background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:11,flexShrink:0}}>
+              {profile?.avatar_url ? <img src={profile.avatar_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>{e.target.style.display="none";}}/> : <span>{ini}</span>}
+            </div>
+            <div style={{textAlign:"left",lineHeight:1.3}}>
+              <div style={{fontWeight:700,fontSize:13,color:"var(--gray-900)",maxWidth:130,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{displayName}</div>
+              {bdayStr && <div style={{fontSize:10,color:"var(--gray-400)"}}>{bdayStr}</div>}
+            </div>
+          </button>
+
+          {/* Mobile controls */}
+          <div style={{display:"flex",alignItems:"center",gap:7,marginLeft:"auto"}} className="show-mob">
+            <button onClick={()=>setPage("profile")} style={{width:29,height:29,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,var(--blue),var(--blue-dark))",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:11,border:"none",cursor:"pointer",flexShrink:0}}>
+              {profile?.avatar_url ? <img src={profile.avatar_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : <span>{ini}</span>}
+            </button>
+            <button onClick={()=>setMenuOpen(p=>!p)} className="btn btn-ghost" style={{fontSize:12,padding:"6px 11px"}}>{menuOpen?"✕":"Menu"}</button>
+          </div>
         </div>
 
-        <Footer/>
+        {/* Mobile menu */}
+        {menuOpen && (
+          <nav style={{background:"#fff",borderTop:"1px solid var(--gray-100)",padding:"7px 16px 11px"}}>
+            {[["dashboard","Dashboard"],["calculator","Calculator"],["profile","Profile"]].map(([p,label]) => (
+              <button key={p} onClick={()=>setPage(p)} style={{display:"block",width:"100%",padding:"9px 12px",borderRadius:8,border:"none",fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,cursor:"pointer",textAlign:"left",background:page===p?"var(--blue-light)":"transparent",color:page===p?"var(--blue)":"var(--gray-600)",marginBottom:2}}>{label}</button>
+            ))}
+          </nav>
+        )}
+      </header>
+
+      <div style={{flex:1,paddingTop:4,paddingBottom:4}}>
+        {page==="dashboard" && <Dashboard startCap={startCap} setStartCap={setStartCap}/>}
+        {page==="calculator" && <CalcPage/>}
+        {page==="profile" && <ProfilePage profile={profile} setProfile={setProfile} trades={trades} onLogout={onLogout}/>}
       </div>
-    </ToastProvider>
+
+      <Footer/>
+    </div>
   );
 }
 
-// add show-sm-flex class for mobile flex display
-const st=document.createElement("style");
-st.textContent=`@media(min-width:769px){.show-sm-flex{display:none!important;}}@media(max-width:768px){.show-sm-flex{display:flex!important;}.hide-sm{display:none!important;}}`;
-document.head.appendChild(st);
+// Mobile show/hide helper
+const ms = document.createElement("style");
+ms.textContent = `@media(min-width:769px){.show-mob{display:none!important;}}@media(max-width:768px){.show-mob{display:flex!important;}}`;
+document.head.appendChild(ms);
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
